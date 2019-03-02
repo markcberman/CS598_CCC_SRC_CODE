@@ -1,0 +1,88 @@
+---
+title: "query 3.1 - Does Popularity Follow Zipf's Distribution"
+author: "Mark Berman"
+date: "2/14/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+```{r}
+library(gamlss.dist)
+data <- read.csv("~/cs598_ccc/cassandra_files/queryResults/group3dot1/part-00000-bd06de5d-24f3-4203-857b-d0adfe9e11b7-c000.csv")
+str(data)
+totalArrivalsAndDepartures <- data$totalArrivalsAndDepartures
+rank <- data$rank
+probability <- totalArrivalsAndDepartures/sum(totalArrivalsAndDepartures)
+airportPopularityRank <- seq(1,length(totalArrivalsAndDepartures))
+zipfProbDensity <- dZIPF(airportPopularityRank, mu=1,log=T)
+plot(log(airportPopularityRank), zipfProbDensity,type="l",xlab = "log (Airport Popularity rank)", ylab = "log (Probability Density)", col="dodgerblue")
+lines(log(rank), log(probability), col="red")
+legend(0, -10, legend=c("Fitted Zipf Distribution", "Log-Log (Airport Popularity Rank Probability Distribution"),
+       col=c("dodgerblue", "red"), lty=1:2, cex=0.8)
+```
+The above plot strongly suggests that airport populatiry ran does not follow Zipf's law or a Zipf distribution.   The question is "what disribution does airport popularity come from?"
+
+```{r}
+plot(density(totalArrivalsAndDepartures),main="Density estimate of data")
+```
+```{r}
+hist(totalArrivalsAndDepartures,main="Histogram of observed data", ylim=c(0,339), xlim=c(0,13500000),breaks=25, labels=T)
+```
+
+```{r}
+library(MASS)
+data <- read.csv("~/cs598_ccc/cassandra_files/queryResults/group3dot1/part-00000-bd06de5d-24f3-4203-857b-d0adfe9e11b7-c000.csv")
+str(data)
+totalArrivalsAndDepartures <- data$totalArrivalsAndDepartures
+exp_fit <- fitdistr(totalArrivalsAndDepartures, "exponential")
+## estimate p value
+est_p_value <-  exp_fit$estimate
+## estimate goodness of fit
+ks.test(totalArrivalsAndDepartures, "pexp", est_p_value)
+
+```
+
+```{r}
+plot(density(totalArrivalsAndDepartures),xlim = c(0, quantile(totalArrivalsAndDepartures, 0.99)), main = "Empirical Density vs Fitted Exponential PDF", xlab="airport populatiry rank", sub="N = 339 Bandwidth = 7.62e+04")
+lines(totalArrivalsAndDepartures, dexp(totalArrivalsAndDepartures, rate = est_p_value), col = "red")
+```
+
+The estimated p_value, the K-S goodness of fit test and the above plot serve to reject the hypothesis that airport popularity rank (measured by total departures and arrivals) follows an
+exponential distribution.
+
+```{r}
+library(poweRlaw)
+data <- read.csv("~/cs598_ccc/cassandra_files/queryResults/group3dot1/part-00000-bd06de5d-24f3-4203-857b-d0adfe9e11b7-c000.csv")
+str(data)
+totalArrivalsAndDepartures <- data$totalArrivalsAndDepartures
+totArrDep_pl = displ$new(totalArrivalsAndDepartures)
+est_pl_xmin = estimate_xmin(totArrDep_pl)
+totArrDep_pl$setXmin(est_pl_xmin)
+totArrDep_ln = dislnorm$new(totalArrivalsAndDepartures)
+est_ln_xmin = estimate_xmin(totArrDep_ln)
+totArrDep_ln$setXmin(est_ln_xmin)
+totArrDep_pois <- dispois$new(totalArrivalsAndDepartures)
+est_pois_xmin <- estimate_xmin(totArrDep_pois)
+totArrDep_pois$setXmin(est_pois_xmin)
+ plot(totArrDep_pl, xlab = "total arrivals and departures", ylab = "ccdf", ylim=c(0.01,1),xlim=c(1,1.3e+07))
+ lines(totArrDep_pl, col="red")
+ lines(totArrDep_ln, col="green")
+ lines(totArrDep_pois, col="dodgerblue", length.out=339)
+ legend(1, 0.05, legend=c("powerlaw", "log-normal", "poison"),
+       col=c("red", "green", "dodgerblue"), lty=1:2, cex=0.8)
+
+
+```
+
+```{r}
+bs_ln_p = bootstrap_p(totArrDep_ln,threads=5,xmax=1.3e+07)
+bs_ln_p$p
+```
+
+The above curve and the estimated p_value indicate that airport popularity rank follows a Log-Normal distribution.
