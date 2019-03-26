@@ -1,4 +1,4 @@
-package com.usbank.edm.test;
+package package cs598ccc.task2;
 
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
