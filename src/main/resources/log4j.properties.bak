@@ -1,0 +1,67 @@
+# set global logging severity to INFO (and upwards: WARN, ERROR, FATAL)
+log4j.rootLogger=WARN,file,console
+
+# console config (restrict only to ERROR and FATAL)
+log4j.appender.console=org.apache.log4j.ConsoleAppender
+log4j.appender.console.target=System.out
+log4j.appender.console.threshold=INFO
+log4j.appender.console.layout=org.apache.log4j.PatternLayout
+log4j.appender.console.layout.ConversionPattern=%d{yy/MM/dd HH:mm:ss} %p %c{1}: %m%n
+
+# file config
+log4j.appender.file=org.apache.log4j.RollingFileAppender
+log4j.appender.file.File=/home/markcb2/application.log
+log4j.appender.file.MaxFileSize=50MB
+log4j.appender.file.MaxBackupIndex=3
+log4j.appender.file.layout=org.apache.log4j.PatternLayout
+log4j.appender.file.layout.ConversionPattern=%d{yy/MM/dd HH:mm:ss} %p %c{1}: %m%n
+
+log4j.appender.converter_file=org.apache.log4j.RollingFileAppender
+log4j.appender.converter_file.File=/home/markcb2/CSV2ParquetConverter.log
+log4j.appender.converter_file.MaxFileSize=50MB
+log4j.appender.converter_file.MaxBackupIndex=3
+log4j.appender.converter_file.layout=org.apache.log4j.PatternLayout
+log4j.appender.converter_file.layout.ConversionPattern=%d{yy/MM/dd HH:mm:ss} %p %c{1}: %m%n
+
+log4j.appender.group1_file=org.apache.log4j.RollingFileAppender
+log4j.appender.group1_file.File=/home/markcb2/Group1Queries.log
+log4j.appender.group1_file.MaxFileSize=50MB
+log4j.appender.group1_file.MaxBackupIndex=3
+log4j.appender.group1_file.layout=org.apache.log4j.PatternLayout
+log4j.appender.group1_file.layout.ConversionPattern=%d{yy/MM/dd HH:mm:ss} %p %c{1}: %m%n
+
+log4j.appender.group2_file=org.apache.log4j.RollingFileAppender
+log4j.appender.group2_file.File=/home/markcb2/Group2Queries.log
+log4j.appender.group2_file.MaxFileSize=50MB
+log4j.appender.group2_file.MaxBackupIndex=3
+log4j.appender.group2_file.layout=org.apache.log4j.PatternLayout
+log4j.appender.group2_file.layout.ConversionPattern=%d{yy/MM/dd HH:mm:ss} %p %c{1}: %m%n
+
+log4j.appender.group3_file=org.apache.log4j.RollingFileAppender
+log4j.appender.group3_file.File=/home/markcb2/Group3Queries.log
+log4j.appender.group3_file.MaxFileSize=50MB
+log4j.appender.group3_file.MaxBackupIndex=3
+log4j.appender.group3_file.layout=org.apache.log4j.PatternLayout
+log4j.appender.group3_file.layout.ConversionPattern=%d{yy/MM/dd HH:mm:ss} %p %c{1}: %m%n
+
+log4j.appender.test_logger_file=org.apache.log4j.RollingFileAppender
+log4j.appender.test_logger_file.File=/home/markcb2/LogTester.log
+log4j.appender.test_logger_file.MaxFileSize=50MB
+log4j.appender.test_logger_file.MaxBackupIndex=3
+log4j.appender.test_logger_file.layout=org.apache.log4j.PatternLayout
+log4j.appender.test_logger_file.layout.ConversionPattern=%d{yy/MM/dd HH:mm:ss} %p %c{1}: %m%n
+
+# Settings to quiet third party logs that are too verbose
+log4j.logger.org.eclipse.jetty=WARN
+log4j.logger.org.eclipse.jetty.util.component.AbstractLifeCycle=ERROR
+log4j.logger.org.apache.spark.repl.SparkIMain$exprTyper=INFO
+log4j.logger.org.apache.spark.repl.SparkILoop$SparkILoopInterpreter=INFO
+log4j.logger.org.apache.spark=WARN
+log4j.logger.org.apache.hadoop=WARN
+
+log4j.logger.cs598ccc.task1.convert=INFO,converter_file
+log4j.logger.cs598ccc.task1.group1=INFO,group1_file
+log4j.logger.cs598ccc.task1.group2=INFO,group2_file
+log4j.logger.cs598ccc.task1.group3=INFO,group3_file
+log4j.logger.cs598ccc.task1.test.log4j=INFO,test_logger_file
+

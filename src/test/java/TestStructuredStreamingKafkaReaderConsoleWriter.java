@@ -47,6 +47,7 @@ public class TestStructuredStreamingKafkaReaderConsoleWriter {
                 .option("startingOffsets", "earliest")
                 .option("minPartitions", 4)
                 .option("maxOffsetsPerTrigger", 1000)
+                .option("startingOffsets", "earliest")
                 .load();
 
 
