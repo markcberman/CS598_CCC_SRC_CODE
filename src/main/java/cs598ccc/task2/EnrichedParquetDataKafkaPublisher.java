@@ -116,7 +116,16 @@ public class EnrichedParquetDataKafkaPublisher {
         enrichedData_df = enrichedData_df
                 .withColumn("id", functions.hash(enrichedData_df.col("Year"),enrichedData_df.col("Month"), enrichedData_df.col("DayofMonth"),enrichedData_df.col("DepTime"),enrichedData_df.col("AirlineID"),enrichedData_df.col("FlightNum")));
 
-        StreamingQuery query =  enrichedData_df.selectExpr("CAST(id AS STRING) AS key", "to_json(struct(*)) AS value")
+
+        Dataset<Row> counts = enrichedData_df.groupBy("origin").count();
+        counts.writeStream()
+                .outputMode("complete")
+                .format("console")
+                .start();
+
+
+
+        StreamingQuery kafkaSink =  enrichedData_df.selectExpr("CAST(id AS STRING) AS key", "to_json(struct(*)) AS value")
                 .writeStream()
                 .queryName("enriched_data")
                 .format("kafka")
@@ -126,12 +135,20 @@ public class EnrichedParquetDataKafkaPublisher {
                 .trigger(Trigger.ProcessingTime(enrichedParquetDataTriggerProcessingTimeMillis.intValue(), TimeUnit.MILLISECONDS))
                 .start();
 
-        query.explain();
+        logger.info("Query id for streaming to kafka sink is: " + kafkaSink.id());
 
-        logger.info("Streaming to kafka topic. Last progress is: " +  query.lastProgress());
+        logger.info("Query name for streaming to kafka sink is: " + kafkaSink.name());
 
-        query.awaitTermination();
+        logger.info("Streaming to kafka topic. Status is: " +  kafkaSink.status());
+
+
+        spark.streams().awaitAnyTermination();
+
+
+
 
     }
+
+
 
 }
