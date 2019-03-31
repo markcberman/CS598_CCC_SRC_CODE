@@ -15,9 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.spark.sql.types.DataTypes;
 
-import static org.apache.spark.sql.functions.expr;
 
 public class EnrichedParquetDataKafkaPublisher {
 
