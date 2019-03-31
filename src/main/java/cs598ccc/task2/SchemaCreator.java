@@ -337,9 +337,52 @@ public class SchemaCreator {
 
     }
 
+    public static StructType createQuery1dot1Schema(){
+        StructType mySchema = DataTypes.createStructType(new StructField[]{ //#A
+                DataTypes.createStructField(
+                        "origin",
+                        DataTypes.StringType,
+                        true),
+                DataTypes.createStructField(
+                        "totalArrivalsAndDepartures",
+                        DataTypes.IntegerType,
+                        false)
+
+        });
+
+        return mySchema;
+
+    }
+
+
+    public static StructType createQuery1dot2Schema(){
+        StructType mySchema = DataTypes.createStructType(new StructField[]{ //#A
+                DataTypes.createStructField(
+                        "group",
+                        DataTypes.IntegerType,
+                        false),
+                DataTypes.createStructField(
+                        "Carrier",
+                        DataTypes.StringType,
+                        true),
+                DataTypes.createStructField(
+                        "avg_time_added",
+                        DataTypes.createDecimalType(14,6),
+                        false)
+
+        });
+
+        return mySchema;
+
+    }
+
+
+
     public static void main(String[] args){
         System.out.println(SchemaCreator.createSchema());
         System.out.println(SchemaCreator.createSchemaWithId());
+        System.out.println(SchemaCreator.createQuery1dot1Schema());
+        System.out.println(SchemaCreator.createQuery1dot2Schema());
     }
 
 }

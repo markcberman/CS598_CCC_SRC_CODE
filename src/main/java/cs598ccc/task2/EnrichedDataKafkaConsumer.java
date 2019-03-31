@@ -21,8 +21,6 @@ public class EnrichedDataKafkaConsumer {
     private Properties prop = new Properties();
     private String master = null;
     private String startingOffsets = null;
-    private String query1dot1Path = null;
-    private String query1dot2Path = null;
     private String kafkaHost = null;
     private String enrichedDataKafkaTopic = null;
     private Integer enrichedDataKafkaTopicMinmaxOffsetsPerTrigger = null;
@@ -80,10 +78,6 @@ public class EnrichedDataKafkaConsumer {
         logger.info("master: " + master);
         startingOffsets = prop.getProperty("startingOffsets", "latest");
         logger.info("startingOffsets: " + startingOffsets);
-        query1dot1Path = prop.getProperty("query1dot1Path", "hdfs:///cs598ccc/queryResults/task2/query1dot1");
-        logger.info("query1dot1Path: " + query1dot1Path);
-        query1dot2Path = prop.getProperty("query1dot2Path", "hdfs:///cs598ccc/queryResults/task2/query1dot2");
-        logger.info("query1dot2Path: " + query1dot2Path);
         kafkaHost = prop.getProperty("kafkaHost", "localhost:6667");
         logger.info("kafkaHost: " + kafkaHost);
         enrichedDataKafkaTopic = prop.getProperty("enrichedDataKafkaTopic");
