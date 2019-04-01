@@ -174,10 +174,13 @@ public class Group2StreamingProcessor {
                 )
                 .orderBy(asc("Origin"),asc("avgDepartureDelay"));
 
+        /*
         query2_1_unfiltered_results_df.writeStream()
                 .outputMode("complete")
                 .format("console")
                 .start();
+
+        */
 
         StreamingQuery query2Dot1KafkaSink = query2_1_unfiltered_results_df.selectExpr("CAST(Origin AS STRING) AS key", "to_json(struct(*)) AS value")
                 .writeStream()
