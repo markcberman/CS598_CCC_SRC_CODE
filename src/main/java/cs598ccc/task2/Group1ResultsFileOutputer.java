@@ -74,9 +74,9 @@ public class Group1ResultsFileOutputer {
         logger.info("startingOffsets: " + startingOffsets);
         kafkaHost = prop.getProperty("kafkaHost", "localhost:6667");
         logger.info("kafkaHost: " + kafkaHost);
-        query1dot1KafkaTopic = prop.getProperty("query1dot1KafkaTopic");
+        query1dot1KafkaTopic = prop.getProperty("query1dot1KafkaTopic","query1dot1-multipart");
         logger.info("query1dot1KafkaTopic: " + query1dot1KafkaTopic);
-        query1dot2KafkaTopic = prop.getProperty("query1dot2KafkaTopic");
+        query1dot2KafkaTopic = prop.getProperty("query1dot2KafkaTopic","query1dot2-multipart");
         logger.info("query1dot2KafkaTopic: " + query1dot2KafkaTopic);
         query1dot1Path = prop.getProperty("query1dot1Path", "hdfs:///cs598ccc/queryResults/task2/query1dot1");
         logger.info("query1dot1Path: " + query1dot1Path);
@@ -169,6 +169,7 @@ public class Group1ResultsFileOutputer {
                 .option("sep", ",")
                 .option("header", "true")
                 .save(query1dot2Path);
+
 
 
     }

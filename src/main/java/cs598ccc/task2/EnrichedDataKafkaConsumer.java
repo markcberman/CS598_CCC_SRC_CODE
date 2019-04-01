@@ -90,13 +90,13 @@ public class EnrichedDataKafkaConsumer {
         logger.info("query1dot1CheckpointLocation: " + query1dot1CheckpointLocation);
         query1dot2CheckpointLocation = prop.getProperty("query1dot2CheckpointLocation","~/checkpoint/query1dot2");
         logger.info("query1dot2CheckpointLocation: " + query1dot2CheckpointLocation);
-        query1dot1KafkaTopic = prop.getProperty("query1dot1KafkaTopic");
+        query1dot1KafkaTopic = prop.getProperty("query1dot1KafkaTopic", "query1dot1-multipart");
         logger.info("query1dot1KafkaTopic: " + query1dot1KafkaTopic);
         query1dot1CheckpointLocation = prop.getProperty("query1dot1CheckpointLocation", "~/checkpoint/query1dot1");
         logger.info("query1dot1CheckpointLocation: " + query1dot1CheckpointLocation);
         query1dot1TriggerProcessingTimeMillis = Integer.valueOf(prop.getProperty("query1dot1TriggerProcessingTimeMillis", "1000"));
         logger.info("departuresByAirportTriggerProcessingTimeMillis: " + query1dot1TriggerProcessingTimeMillis);
-        query1dot2KafkaTopic = prop.getProperty("query1dot2KafkaTopic");
+        query1dot2KafkaTopic = prop.getProperty("query1dot2KafkaTopic", "query1dot2-multipart");
         logger.info("query1dot2KafkaTopic: " + query1dot2KafkaTopic);
         query1dot2CheckpointLocation = prop.getProperty("query1dot2CheckpointLocation", "~/checkpoint/query1dot2");
         logger.info("query1dot2CheckpointLocation: " + query1dot2CheckpointLocation);
