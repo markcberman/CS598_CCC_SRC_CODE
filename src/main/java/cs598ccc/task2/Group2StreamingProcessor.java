@@ -32,8 +32,6 @@ public class Group2StreamingProcessor {
     private String originAirportsPath = null;
     private String destAirportsPath = null;
     private String query2dot1KafkaTopic = null;
-    private Integer query2dot1KafkaTopicMinPartitions = null;
-    private Integer query2dot1KafkaTopicMinmaxOffsetsPerTrigger = null;
     private String query2dot1CheckpointLocation = null;
     private Integer query2dot1TriggerProcessingTimeMillis = null;
 
@@ -116,7 +114,7 @@ public class Group2StreamingProcessor {
     private void start() throws StreamingQueryException {
 
         SparkSession spark = SparkSession.builder()
-                .appName("EnrichedDataKafkaConsumer")
+                .appName("Group2StreamingProcessor")
                 .master(master)
                 .getOrCreate();
 

@@ -377,12 +377,34 @@ public class SchemaCreator {
     }
 
 
+    public static StructType createQuery2dot1Schema(){
+        StructType mySchema = DataTypes.createStructType(new StructField[]{ //#A
+                DataTypes.createStructField(
+                        "Origin",
+                        DataTypes.StringType,
+                        false),
+                DataTypes.createStructField(
+                        "Carrier",
+                        DataTypes.StringType,
+                        false),
+                DataTypes.createStructField(
+                        "avgDepartureDelay",
+                        DataTypes.createDecimalType(14,6),
+                        false)
+
+        });
+
+        return mySchema;
+
+    }
+
 
     public static void main(String[] args){
         System.out.println(SchemaCreator.createSchema());
         System.out.println(SchemaCreator.createSchemaWithId());
         System.out.println(SchemaCreator.createQuery1dot1Schema());
         System.out.println(SchemaCreator.createQuery1dot2Schema());
+        System.out.println(SchemaCreator.createQuery2dot1Schema());
     }
 
 }

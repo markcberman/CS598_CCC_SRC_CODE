@@ -95,7 +95,7 @@ public class Group1ResultsFileOutputer {
     }
     private void start() throws StreamingQueryException {
         SparkSession spark = SparkSession.builder()
-                .appName("EnrichedDataKafkaConsumer")
+                .appName("Group1ResultsFileOutputer")
                 .master(master)
                 .getOrCreate();
 
@@ -103,20 +103,6 @@ public class Group1ResultsFileOutputer {
 
         logger.info("SparkSession Started.");
 
-        spark.streams().addListener(new StreamingQueryListener() {
-            @Override
-            public void onQueryStarted(QueryStartedEvent queryStarted) {
-                logger.info("Streaming Query started: " + queryStarted.id());
-            }
-            @Override
-            public void onQueryTerminated(QueryTerminatedEvent queryTerminated) {
-                logger.info("Streaming Query terminated: " + queryTerminated.id());
-            }
-            @Override
-            public void onQueryProgress(QueryProgressEvent queryProgress) {
-                logger.info("Streaming Query made progress: " + queryProgress.progress());
-            }
-        });
 
         Dataset<Row> query1dot1KafkaSource  = spark.read()
                 .format("kafka")
