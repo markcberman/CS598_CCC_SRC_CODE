@@ -7,6 +7,7 @@ import org.apache.spark.sql.functions;
 import org.apache.spark.sql.streaming.Trigger;
 import org.apache.spark.sql.streaming.StreamingQueryException;
 import org.apache.spark.sql.streaming.StreamingQuery;
+import org.apache.spark.sql.streaming.StreamingQueryListener;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -100,6 +101,21 @@ public class EnrichedParquetDataKafkaPublisher {
                 .appName("EnrichedParquetDataKafkaPublisher")
                 .master(master)
                 .getOrCreate();
+
+        spark.streams().addListener(new StreamingQueryListener() {
+            @Override
+            public void onQueryStarted(QueryStartedEvent queryStarted) {
+                logger.info("Streaming Query started: " + queryStarted.id());
+            }
+            @Override
+            public void onQueryTerminated(QueryTerminatedEvent queryTerminated) {
+                logger.info("Streaming Query terminated: " + queryTerminated.id());
+            }
+            @Override
+            public void onQueryProgress(QueryProgressEvent queryProgress) {
+                logger.info("Streaming Query made progress: " + queryProgress.progress());
+            }
+        });
 
         logger.info("SparkSession Started.");
 

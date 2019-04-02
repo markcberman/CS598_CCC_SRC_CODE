@@ -6,6 +6,7 @@ import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.streaming.StreamingQueryException;
+import org.apache.spark.sql.streaming.StreamingQueryListener;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -98,7 +99,24 @@ public class Group1ResultsFileOutputer {
                 .master(master)
                 .getOrCreate();
 
+
+
         logger.info("SparkSession Started.");
+
+        spark.streams().addListener(new StreamingQueryListener() {
+            @Override
+            public void onQueryStarted(QueryStartedEvent queryStarted) {
+                logger.info("Streaming Query started: " + queryStarted.id());
+            }
+            @Override
+            public void onQueryTerminated(QueryTerminatedEvent queryTerminated) {
+                logger.info("Streaming Query terminated: " + queryTerminated.id());
+            }
+            @Override
+            public void onQueryProgress(QueryProgressEvent queryProgress) {
+                logger.info("Streaming Query made progress: " + queryProgress.progress());
+            }
+        });
 
         Dataset<Row> query1dot1KafkaSource  = spark.read()
                 .format("kafka")

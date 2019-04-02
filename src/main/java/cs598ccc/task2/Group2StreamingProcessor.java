@@ -5,7 +5,7 @@ import org.apache.spark.sql.expressions.Window;
 import org.apache.spark.sql.expressions.WindowSpec;
 import org.apache.spark.sql.streaming.StreamingQuery;
 import org.apache.spark.sql.streaming.StreamingQueryException;
-
+import org.apache.spark.sql.streaming.StreamingQueryListener;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -99,8 +99,6 @@ public class Group2StreamingProcessor {
         logger.info("destAirportsPath: " + destAirportsPath);
         query2dot1KafkaTopic = prop.getProperty("query2dot1KafkaTopic", "query2dot1-multipart");
         logger.info("query2dot1KafkaTopic: " + query2dot1KafkaTopic);
-        kafkaHost = prop.getProperty("kafkaHost","localhost:6667");
-        logger.info("kafkaHost: " + kafkaHost);
         query2dot1CheckpointLocation = prop.getProperty("query2dot1CheckpointLocation","~/checkpoint/query2dot1");
         logger.info("query2dot1CheckpointLocation: " + query2dot1CheckpointLocation);
         query2dot1TriggerProcessingTimeMillis = Integer.valueOf(prop.getProperty("query2dot1TriggerProcessingTimeMillis", "1000"));
@@ -124,13 +122,28 @@ public class Group2StreamingProcessor {
 
         logger.info("SparkSession Started.");
 
+        spark.streams().addListener(new StreamingQueryListener() {
+            @Override
+            public void onQueryStarted(QueryStartedEvent queryStarted) {
+                logger.info("Streaming Query started: " + queryStarted.id());
+            }
+            @Override
+            public void onQueryTerminated(QueryTerminatedEvent queryTerminated) {
+                logger.info("Streaming Query terminated: " + queryTerminated.id());
+            }
+            @Override
+            public void onQueryProgress(QueryProgressEvent queryProgress) {
+                logger.info("Streaming Query made progress: " + queryProgress.progress());
+            }
+        });
+
         Dataset<Row> orign_airports_df = spark.read()
                 .format("csv")
                 .option("sep", ",")
                 .option("header", "true")
                 .load(originAirportsPath);
 
-        orign_airports_df.createOrReplaceTempView("origin_airports");
+        //orign_airports_df.createOrReplaceTempView("origin_airports");
 
         Dataset<Row> dest_airports_df = spark.read()
                 .format("csv")
@@ -138,7 +151,7 @@ public class Group2StreamingProcessor {
                 .option("header", "true")
                 .load(destAirportsPath);
 
-        dest_airports_df.createOrReplaceTempView("dest_airports");
+        //dest_airports_df.createOrReplaceTempView("dest_airports");
 
         Dataset<Row> kafka_input = spark
                 .readStream()
@@ -152,19 +165,19 @@ public class Group2StreamingProcessor {
 
 
         Dataset<Row> enriched_ontime_perf_df = kafka_input.selectExpr("CAST(value AS STRING)", "CAST(timestamp AS TIMESTAMP)")
-                .select(from_json(col("value"), SchemaCreator.createSchema()).as("data"), col("timestamp"))
+                .select(from_json(col("value"), SchemaCreator.createSchemaWithId()).as("data"), col("timestamp"))
                 .select("data.*", "timestamp");
 
         enriched_ontime_perf_df.printSchema();
 
-        enriched_ontime_perf_df.createOrReplaceTempView("enriched_ontimeperf");
+        enriched_ontime_perf_df.dropDuplicates("id");
 
+        /*
         enriched_ontime_perf_df.writeStream()
                 .outputMode("append")
                 .format("console")
                 .start();
-
-       // Dataset<Row> query2_1_unfiltered_results_df = spark.sql("SELECT Origin, Carrier, avg(DepDelay) as avgDepartureDelay FROM enriched_ontimeperf WHERE Origin in (SELECT origin_airport_code FROM origin_airports) GROUP By Origin, Carrier  ORDER BY Origin ASC, avgDepartureDelay ASC");
+        */
 
         Dataset<Row> query2_1_unfiltered_results_df = enriched_ontime_perf_df.join(orign_airports_df,enriched_ontime_perf_df.col("Origin").equalTo(orign_airports_df.col("origin_airport_code")))
                 .groupBy(enriched_ontime_perf_df.col("Origin"),enriched_ontime_perf_df.col("Carrier"))

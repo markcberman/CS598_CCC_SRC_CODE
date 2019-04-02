@@ -4,6 +4,7 @@ import org.apache.spark.sql.*;
 import org.apache.spark.sql.streaming.Trigger;
 import org.apache.spark.sql.streaming.StreamingQueryException;
 import org.apache.spark.sql.streaming.StreamingQuery;
+import org.apache.spark.sql.streaming.StreamingQueryListener;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -119,6 +120,21 @@ public class EnrichedDataKafkaConsumer {
 
         logger.info("SparkSession Started.");
 
+        spark.streams().addListener(new StreamingQueryListener() {
+            @Override
+            public void onQueryStarted(QueryStartedEvent queryStarted) {
+                logger.info("Streaming Query started: " + queryStarted.id());
+            }
+            @Override
+            public void onQueryTerminated(QueryTerminatedEvent queryTerminated) {
+                logger.info("Streaming Query terminated: " + queryTerminated.id());
+            }
+            @Override
+            public void onQueryProgress(QueryProgressEvent queryProgress) {
+                logger.info("Streaming Query made progress: " + queryProgress.progress());
+            }
+        });
+
         Dataset<Row> kafka_input = spark
                 .readStream()
                 .format("kafka")
@@ -131,10 +147,23 @@ public class EnrichedDataKafkaConsumer {
 
 
         Dataset<Row> jsonified_data = kafka_input.selectExpr("CAST(value AS STRING)", "CAST(timestamp AS TIMESTAMP)")
-                .select(from_json(col("value"),SchemaCreator.createSchema()).as("data"),col("timestamp"))
+                .select(from_json(col("value"),SchemaCreator.createSchemaWithId()).as("data"),col("timestamp"))
                 .select("data.*", "timestamp");
 
         jsonified_data.printSchema();
+
+        jsonified_data.dropDuplicates("id");
+
+        logger.info("Kafka source is streaming: "+ jsonified_data.isStreaming());
+
+        /*
+
+        jsonified_data.writeStream()
+                .outputMode("append")
+                .format("console")
+                .start();
+
+        */
 
         Dataset<Row> airportArrivalsAndDepartures = jsonified_data.groupBy("origin")
                 .agg(
@@ -197,6 +226,8 @@ public class EnrichedDataKafkaConsumer {
 
         logger.info("Streaming to Kafka sink. Status is: " +  query1Dot1KafkaSink.status());
 
+        logger.info(query1Dot1KafkaSink.lastProgress());
+
 
         StreamingQuery query1Dot2KafkaSink = airlineOnTimeArrivalPerformance_df.selectExpr("CAST(Carrier AS STRING) AS key", "to_json(struct(*)) AS value")
                 .writeStream()
@@ -214,6 +245,10 @@ public class EnrichedDataKafkaConsumer {
         logger.info("Query name for streaming to Kafka sink is: " + query1Dot2KafkaSink.name());
 
         logger.info("Streaming to Kafka sink. Status is: " +  query1Dot2KafkaSink.status());
+
+        logger.info(query1Dot2KafkaSink.lastProgress());
+
+        spark.streams().active();
 
         spark.streams().awaitAnyTermination();
 
