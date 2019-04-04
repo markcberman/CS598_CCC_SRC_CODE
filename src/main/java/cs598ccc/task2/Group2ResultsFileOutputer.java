@@ -6,8 +6,6 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.expressions.Window;
 import org.apache.spark.sql.expressions.WindowSpec;
-import org.apache.spark.sql.streaming.StreamingQueryException;
-import org.apache.spark.sql.streaming.StreamingQueryListener;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -121,7 +119,7 @@ public class Group2ResultsFileOutputer {
                 )
                 .orderBy(asc("Origin"),asc("Carrier"));
 
-        query2dot1_reduced_data.show(200);
+        //query2dot1_reduced_data.show(200);
 
         WindowSpec windowSpec = Window.partitionBy("Origin").orderBy(asc("avgDepartureDelay"));
 
@@ -140,6 +138,51 @@ public class Group2ResultsFileOutputer {
                 .option("sep", ",")
                 .option("header", "true")
                 .save(query2dot1Path);
+
+
+
+        Dataset<Row> query2dot2KafkaSource = spark.read()
+                .format("kafka")
+                .option("kafka.bootstrap.servers", kafkaHost)
+                .option("subscribe", query2dot2KafkaTopic.trim())
+                .option("startingOffsets", startingOffsets)
+                .option("minPartitions", query2dot2KafkaTopicMinPartitions)
+                .load();
+
+
+        Dataset<Row> query2dot2_all_data = query2dot2KafkaSource.selectExpr("CAST(value AS STRING)", "CAST(timestamp AS TIMESTAMP)")
+                .select(from_json(col("value"), SchemaCreator.createQuery2dot2Schema()).as("data"), col("timestamp"))
+                .select("data.*", "timestamp")
+                //.orderBy(desc("timestamp"));
+                .orderBy(asc("Origin"),asc("Dest"),desc("timestamp"));
+
+        query2dot2_all_data.show(1000);
+
+        Dataset<Row> query2dot2_reduced_data = query2dot2_all_data.groupBy("Origin", "Dest")
+                .agg(
+                        first("avgDepartureDelay").as("avgDepartureDelay")
+                )
+                .orderBy(asc("Origin"),asc("Dest"));
+
+        //query2dot2_reduced_data.show(200);
+
+        WindowSpec windowSpec_2_2 = Window.partitionBy("Origin").orderBy(asc("avgDepartureDelay"));
+
+        Dataset<Row> query2_2_ranked_df = query2dot2_reduced_data.withColumn("rank", rank().over(windowSpec_2_2))
+                .where(col("rank").lt(11))
+                .drop("rank");
+
+        query2_2_ranked_df.show(200);
+
+
+        query2_2_ranked_df.orderBy("Origin")
+                .coalesce(1)
+                .write()
+                .format("csv")
+                .mode("overwrite")
+                .option("sep", ",")
+                .option("header", "true")
+                .save(query2dot2Path);
 
     }
 

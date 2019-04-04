@@ -34,6 +34,9 @@ public class Group2StreamingProcessor {
     private String query2dot1KafkaTopic = null;
     private String query2dot1CheckpointLocation = null;
     private Integer query2dot1TriggerProcessingTimeMillis = null;
+    private String query2dot2KafkaTopic = null;
+    private String query2dot2CheckpointLocation = null;
+    private Integer query2dot2TriggerProcessingTimeMillis = null;
 
 
 
@@ -101,6 +104,12 @@ public class Group2StreamingProcessor {
         logger.info("query2dot1CheckpointLocation: " + query2dot1CheckpointLocation);
         query2dot1TriggerProcessingTimeMillis = Integer.valueOf(prop.getProperty("query2dot1TriggerProcessingTimeMillis", "1000"));
         logger.info("query2dot1TriggerProcessingTimeMillis: " + query2dot1TriggerProcessingTimeMillis);
+        query2dot2KafkaTopic = prop.getProperty("query2dot2KafkaTopic", "query2dot2-multipart");
+        logger.info("query2dot2KafkaTopic: " + query2dot2KafkaTopic);
+        query2dot2CheckpointLocation = prop.getProperty("query2dot2CheckpointLocation","~/checkpoint/query2dot2");
+        logger.info("query2dot2CheckpointLocation: " + query2dot2CheckpointLocation);
+        query2dot2TriggerProcessingTimeMillis = Integer.valueOf(prop.getProperty("query2dot2TriggerProcessingTimeMillis", "1000"));
+        logger.info("query2dot2TriggerProcessingTimeMillis: " + query2dot2TriggerProcessingTimeMillis);
 
 
 
@@ -170,12 +179,6 @@ public class Group2StreamingProcessor {
 
         enriched_ontime_perf_df.dropDuplicates("id");
 
-        /*
-        enriched_ontime_perf_df.writeStream()
-                .outputMode("append")
-                .format("console")
-                .start();
-        */
 
         Dataset<Row> query2_1_unfiltered_results_df = enriched_ontime_perf_df.join(orign_airports_df,enriched_ontime_perf_df.col("Origin").equalTo(orign_airports_df.col("origin_airport_code")))
                 .groupBy(enriched_ontime_perf_df.col("Origin"),enriched_ontime_perf_df.col("Carrier"))
@@ -185,13 +188,16 @@ public class Group2StreamingProcessor {
                 )
                 .orderBy(asc("Origin"),asc("avgDepartureDelay"));
 
-        /*
-        query2_1_unfiltered_results_df.writeStream()
-                .outputMode("complete")
-                .format("console")
-                .start();
 
-        */
+        Dataset<Row> query2_2_unfiltered_results_df = enriched_ontime_perf_df.join(dest_airports_df,enriched_ontime_perf_df.col("Origin").equalTo(dest_airports_df.col("dest_airport_code")))
+                .groupBy(enriched_ontime_perf_df.col("Origin"),enriched_ontime_perf_df.col("Dest"))
+                .agg(
+                        avg(enriched_ontime_perf_df.col("DepDelay")).alias("avgDepartureDelay")
+
+                )
+                .orderBy(asc("Origin"),asc("avgDepartureDelay"));
+
+
 
         StreamingQuery query2Dot1KafkaSink = query2_1_unfiltered_results_df.selectExpr("CAST(Origin AS STRING) AS key", "to_json(struct(*)) AS value")
                 .writeStream()
@@ -209,6 +215,31 @@ public class Group2StreamingProcessor {
         logger.info("Query name for streaming to Kafka sink is: " + query2Dot1KafkaSink.name());
 
         logger.info("Streaming to Kafka sink. Status is: " +  query2Dot1KafkaSink.status());
+
+
+
+        StreamingQuery query2Dot2KafkaSink = query2_2_unfiltered_results_df.selectExpr("CAST(concat(Origin,Dest) AS STRING) AS key", "to_json(struct(*)) AS value")
+                .writeStream()
+                .format("kafka")
+                .outputMode("complete")
+                .queryName("query2dot2")
+                .option("topic", query2dot2KafkaTopic.trim())
+                .option("kafka.bootstrap.servers", kafkaHost)
+                .option("checkpointLocation", query2dot2CheckpointLocation)
+                .trigger(Trigger.ProcessingTime(query2dot2TriggerProcessingTimeMillis.intValue(), TimeUnit.MILLISECONDS))
+                .start();
+
+
+
+        logger.info("Query id for streaming to Kafka sink is: " + query2Dot2KafkaSink.id());
+
+        logger.info("Query name for streaming to Kafka sink is: " + query2Dot2KafkaSink.name());
+
+        logger.info("Streaming to Kafka sink. Status is: " +  query2Dot2KafkaSink.status());
+
+
+
+
 
         spark.streams().awaitAnyTermination();
 
