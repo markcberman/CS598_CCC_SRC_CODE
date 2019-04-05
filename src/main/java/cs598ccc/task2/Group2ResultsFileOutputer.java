@@ -23,10 +23,14 @@ public class Group2ResultsFileOutputer {
     private String kafkaHost = null;
     private String query2dot1KafkaTopic = null;
     private String query2dot2KafkaTopic = null;
+    private String query2dot4KafkaTopic = null;
     private String query2dot1Path = null;
     private String query2dot2Path = null;
+    private String query2dot4Path = null;
     private Integer query2dot1KafkaTopicMinPartitions = null;
     private Integer query2dot2KafkaTopicMinPartitions = null;
+    private Integer query2dot4KafkaTopicMinPartitions = null;
+
 
 
     public static void main(String[] args){
@@ -74,14 +78,21 @@ public class Group2ResultsFileOutputer {
         logger.info("query2dot1KafkaTopic: " + query2dot1KafkaTopic);
         query2dot2KafkaTopic = prop.getProperty("query2dot2KafkaTopic","query2dot2-multipart");
         logger.info("query2dot2KafkaTopic: " + query2dot2KafkaTopic);
+        query2dot4KafkaTopic = prop.getProperty("query2dot4KafkaTopic","query2dot4-multipart");
+        logger.info("query2dot4KafkaTopic: " + query2dot4KafkaTopic);
         query2dot1Path = prop.getProperty("query2dot1Path", "hdfs:///cs598ccc/queryResults/task2/query2dot1");
         logger.info("query2dot1Path: " + query2dot1Path);
         query2dot2Path = prop.getProperty("query2dot2Path", "hdfs:///cs598ccc/queryResults/task2/query2dot2");
         logger.info("query2dot2Path: " + query2dot2Path);
+        query2dot4Path = prop.getProperty("query2dot4Path", "hdfs:///cs598ccc/queryResults/task2/query2dot4");
+        logger.info("query2dot4Path: " + query2dot4Path);
         query2dot1KafkaTopicMinPartitions = Integer.valueOf(prop.getProperty("query2dot1KafkaTopicMinPartitions","1"));
         logger.info("query2dot1KafkaTopicMinPartitions: " + query2dot1KafkaTopicMinPartitions);
         query2dot2KafkaTopicMinPartitions = Integer.valueOf(prop.getProperty("query2dot2KafkaTopicMinPartitions","1"));
         logger.info("query2dot2KafkaTopicMinPartitions: " + query2dot2KafkaTopicMinPartitions);
+        query2dot4KafkaTopicMinPartitions = Integer.valueOf(prop.getProperty("query2dot4KafkaTopicMinPartitions","1"));
+        logger.info("query2dot4KafkaTopicMinPartitions: " + query2dot4KafkaTopicMinPartitions);
+
 
     }
 
@@ -184,7 +195,55 @@ public class Group2ResultsFileOutputer {
                 .option("header", "true")
                 .save(query2dot2Path);
 
+
+
+        Dataset<Row> query2dot4KafkaSource = spark.read()
+                .format("kafka")
+                .option("kafka.bootstrap.servers", kafkaHost)
+                .option("subscribe", query2dot4KafkaTopic.trim())
+                .option("startingOffsets", startingOffsets)
+                .option("minPartitions", query2dot4KafkaTopicMinPartitions)
+                .load();
+
+
+        Dataset<Row> query2dot4_all_data = query2dot4KafkaSource.selectExpr("CAST(value AS STRING)", "CAST(timestamp AS TIMESTAMP)")
+                .select(from_json(col("value"), SchemaCreator.createQuery2dot4Schema()).as("data"), col("timestamp"))
+                .select("data.*", "timestamp")
+                //.orderBy(desc("timestamp"));
+                .orderBy(asc("Origin"),asc("Dest"),desc("timestamp"));
+
+        query2dot4_all_data.show(1000);
+
+
+        Dataset<Row> query2dot4_reduced_data = query2dot4_all_data.groupBy("Origin", "Dest")
+                .agg(
+                        first("avgArrivalDelay").as("avgArrivalDelay")
+                )
+                .orderBy(asc("Origin"),asc("Dest"));
+
+        query2dot4_reduced_data.show(200);
+
+
+        query2dot4_reduced_data.orderBy(asc("Origin"),asc("Dest"))
+                .coalesce(1)
+                .write()
+                .format("csv")
+                .mode("overwrite")
+                .option("sep", ",")
+                .option("header", "true")
+                .save(query2dot4Path);
+
+
     }
+
+
+
+
+
+
+
+
+
 
 
     }

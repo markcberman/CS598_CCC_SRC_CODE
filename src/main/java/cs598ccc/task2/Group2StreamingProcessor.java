@@ -37,6 +37,9 @@ public class Group2StreamingProcessor {
     private String query2dot2KafkaTopic = null;
     private String query2dot2CheckpointLocation = null;
     private Integer query2dot2TriggerProcessingTimeMillis = null;
+    private String query2dot4KafkaTopic = null;
+    private String query2dot4CheckpointLocation = null;
+    private Integer  query2dot4TriggerProcessingTimeMillis = null;
 
 
 
@@ -110,6 +113,13 @@ public class Group2StreamingProcessor {
         logger.info("query2dot2CheckpointLocation: " + query2dot2CheckpointLocation);
         query2dot2TriggerProcessingTimeMillis = Integer.valueOf(prop.getProperty("query2dot2TriggerProcessingTimeMillis", "1000"));
         logger.info("query2dot2TriggerProcessingTimeMillis: " + query2dot2TriggerProcessingTimeMillis);
+        query2dot4KafkaTopic = prop.getProperty("query2dot4KafkaTopic", "query2dot4-multipart");
+        logger.info("query2dot4KafkaTopic: " + query2dot4KafkaTopic);
+        query2dot4CheckpointLocation = prop.getProperty("query2dot4CheckpointLocation","~/checkpoint/query2dot4");
+        logger.info("query2dot4CheckpointLocation: " + query2dot4CheckpointLocation);
+        query2dot4TriggerProcessingTimeMillis = Integer.valueOf(prop.getProperty("query2dot4TriggerProcessingTimeMillis", "1000"));
+        logger.info("query2dot4TriggerProcessingTimeMillis: " + query2dot4TriggerProcessingTimeMillis);
+
 
 
 
@@ -199,6 +209,16 @@ public class Group2StreamingProcessor {
 
 
 
+        Dataset<Row> query2_4_unfiltered_results_df = enriched_ontime_perf_df
+                .groupBy(enriched_ontime_perf_df.col("Origin"),enriched_ontime_perf_df.col("Dest"))
+                .agg(
+                        avg(enriched_ontime_perf_df.col("ArrDelay")).alias("avgArrivalDelay")
+
+                )
+                .orderBy(asc("Origin"),asc("Dest"));
+
+
+
         StreamingQuery query2Dot1KafkaSink = query2_1_unfiltered_results_df.selectExpr("CAST(Origin AS STRING) AS key", "to_json(struct(*)) AS value")
                 .writeStream()
                 .format("kafka")
@@ -236,6 +256,28 @@ public class Group2StreamingProcessor {
         logger.info("Query name for streaming to Kafka sink is: " + query2Dot2KafkaSink.name());
 
         logger.info("Streaming to Kafka sink. Status is: " +  query2Dot2KafkaSink.status());
+
+
+
+
+        StreamingQuery query2Dot4KafkaSink = query2_4_unfiltered_results_df.selectExpr("CAST(concat(Origin,Dest) AS STRING) AS key", "to_json(struct(*)) AS value")
+                .writeStream()
+                .format("kafka")
+                .outputMode("complete")
+                .queryName("query2dot4")
+                .option("topic", query2dot4KafkaTopic.trim())
+                .option("kafka.bootstrap.servers", kafkaHost)
+                .option("checkpointLocation", query2dot4CheckpointLocation)
+                .trigger(Trigger.ProcessingTime(query2dot4TriggerProcessingTimeMillis.intValue(), TimeUnit.MILLISECONDS))
+                .start();
+
+
+
+        logger.info("Query id for streaming to Kafka sink is: " + query2Dot4KafkaSink.id());
+
+        logger.info("Query name for streaming to Kafka sink is: " + query2Dot4KafkaSink.name());
+
+        logger.info("Streaming to Kafka sink. Status is: " +  query2Dot4KafkaSink.status());
 
 
 
