@@ -179,7 +179,7 @@ public class Setup {
                             ).or(
                                 col("Origin").equalTo("MIA")
                                         .and(col("Dest").equalTo("LAX"))
-                                        .and(col("Month").equalTo(1))
+                                        .and(col("Month").equalTo(5))
                             )
                         )
 

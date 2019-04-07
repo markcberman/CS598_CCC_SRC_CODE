@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.functions;
 import org.apache.spark.sql.streaming.StreamingQuery;
 import org.apache.spark.sql.streaming.StreamingQueryException;
 import org.apache.spark.sql.streaming.StreamingQueryListener;
@@ -32,6 +33,9 @@ public class Group3Preprocessor {
     private String enrichedData2008KafkaTopic = null;
     private String enrichedData2008CheckpointLocation = null;
     private Integer enrichedData2008TriggerProcessingTimeMillis =null;
+    private String enrichedOntimePerf2Task2Subset = null;
+    private Boolean shouldUse2008SubsetData = null;
+    private String enrichedParquetDataPath = null;
 
 
     public static void main(String[] args){
@@ -92,6 +96,12 @@ public class Group3Preprocessor {
         enrichedData2008CheckpointLocation = prop.getProperty("enrichedData2008CheckpointLocation", "~/checkpoint/enrichedData2008");
         logger.info("enrichedData2008CheckpointLocation: " + enrichedData2008CheckpointLocation);
         enrichedData2008TriggerProcessingTimeMillis = Integer.valueOf(prop.getProperty("enrichedData2008TriggerProcessingTimeMillis", "1000"));
+        enrichedOntimePerf2Task2Subset = prop.getProperty("enrichedOntimePerf2Task2Subset", "hdfs:///cs598ccc/csv_data/task2/enriched_ontimeperf_task2_subset");
+        logger.info("enrichedOntimePerf2Task2Subset: " + enrichedOntimePerf2Task2Subset);
+        shouldUse2008SubsetData = Boolean.valueOf(prop.getProperty("shouldUse2008SubsetData","true"));
+        logger.info("shouldUse2008SubsetData: " + shouldUse2008SubsetData);
+        enrichedParquetDataPath = prop.getProperty("enrichedParquetDataPath", "hdfs:///cs598ccc/parquet_data/ontimeperf");
+        logger.info("enrichedParquetDataPath: " + enrichedParquetDataPath);
 
 
         if (input != null) {
@@ -128,51 +138,45 @@ public class Group3Preprocessor {
             }
         });
 
+        Dataset<Row> enriched_ontime_perf_2008_df = null;
 
-        Dataset<Row> kafka_input = spark
-                .readStream()
+        if (shouldUse2008SubsetData){
+            logger.debug("Using 2008 subset data");
+            enriched_ontime_perf_2008_df = spark.read()
+                    .format("csv")
+                    .option("sep", ",")
+                    .option("header", "true")
+                    .load(enrichedOntimePerf2Task2Subset)
+            ;
+
+        }
+        else{
+            logger.debug("Using 2008 full data");
+            enriched_ontime_perf_2008_df = spark.read().format("parquet")
+                    .load(enrichedParquetDataPath)
+                    .withColumn("id", functions.hash(col("Year")
+                            ,col("Month")
+                            ,col("DayofMonth")
+                            ,col("DepTime")
+                            ,col("AirlineID")
+                            ,col("FlightNum")
+                            )
+                    )
+                    .where(col("Year").equalTo(2008))
+                    ;
+        }
+
+        logger.info(enriched_ontime_perf_2008_df.count() + " records read.");
+
+        enriched_ontime_perf_2008_df.selectExpr("CAST(id AS STRING) AS key", "to_json(struct(*)) AS value")
+                .write()
                 .format("kafka")
-                .option("kafka.bootstrap.servers", kafkaHost)
-                .option("subscribe", enrichedDataKafkaTopic.trim())
-                .option("startingOffsets", startingOffsets)
-                .option("minPartitions", enrichedDataKafkaTopicMinPartitions)
-                .option("maxOffsetsPerTrigger", enrichedDataKafkaTopicMinmaxOffsetsPerTrigger)
-                .load();
-
-        Dataset<Row> enriched_ontime_perf_2008_df = kafka_input.selectExpr("CAST(key AS String)","CAST(value AS STRING)", "CAST(timestamp AS TIMESTAMP)")
-                .select(col("key"),from_json(col("value"), SchemaCreator.createSchemaWithId()).as("data"), col("timestamp"))
-                .select("key","data.*", "timestamp")
-                .where(col("Year").equalTo(2008));
-
-/*
-        enriched_ontime_perf_2008_df.writeStream()
-                .outputMode("append")
-                .format("console")
-                .queryName("console")
-                .start();
-*/
-
-        StreamingQuery enriched_ontime_perf_2008KafkaSink = enriched_ontime_perf_2008_df.selectExpr("CAST(key AS STRING) AS key", "to_json(struct(*)) AS value")
-                .writeStream()
-                .format("kafka")
-                .outputMode("append")
-                .queryName("enriched_ontime_perf_2008")
                 .option("topic", enrichedData2008KafkaTopic.trim())
                 .option("kafka.bootstrap.servers", kafkaHost)
                 .option("checkpointLocation", enrichedData2008CheckpointLocation)
-                .trigger(Trigger.ProcessingTime(enrichedData2008TriggerProcessingTimeMillis.intValue(), TimeUnit.MILLISECONDS))
-                .start();
+                .save();
 
-
-
-        logger.info("Query id for streaming to Kafka sink is: " + enriched_ontime_perf_2008KafkaSink.id());
-
-        logger.info("Query name for streaming to Kafka sink is: " + enriched_ontime_perf_2008KafkaSink.name());
-
-        logger.info("Streaming to Kafka sink. Status is: " +  enriched_ontime_perf_2008KafkaSink.status());
-
-
-        spark.streams().awaitAnyTermination();
+        logger.info("Wrote " + enriched_ontime_perf_2008_df.count() + " 2008 enriched on-time performance records to kafka topic:  " + enrichedData2008KafkaTopic);
 
     }
 
