@@ -125,6 +125,7 @@ public class Group2StreamingProcessor {
 
 
 
+
         if (input != null) {
             input.close();
         }

@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.functions;
 import org.apache.spark.sql.streaming.StreamingQueryException;
 
 import java.io.FileInputStream;
@@ -23,6 +24,7 @@ public class Setup {
     private String enrichedParquetDataPath = null;
     private String originAirportsPath = null;
     private String destAirportsPath = null;
+    private String enrichedOntimePerf2Task2Subset = null;
 
 
     public static void main(String[] args){
@@ -75,6 +77,9 @@ public class Setup {
         logger.info("originAirportsPath: " + originAirportsPath);
         destAirportsPath = prop.getProperty("destAirportsPath","hdfs:///cs598ccc/ref_data/dest_airports");
         logger.info("destAirportsPath: " + destAirportsPath);
+        enrichedOntimePerf2Task2Subset = prop.getProperty("enrichedOntimePerf2Task2Subset", "hdfs:///cs598ccc/csv_data/task2/enriched_ontimeperf_task2_subset");
+        logger.info("enrichedOntimePerf2Task2Subset: " + enrichedOntimePerf2Task2Subset);
+
 
 
 
@@ -130,7 +135,63 @@ public class Setup {
                 .save(destAirportsPath);
 
 
+        Dataset<Row> enriched_ontime_perf_task2_subset_df = enriched_ontime_perf_batch_df
+                .withColumn("id", functions.hash(enriched_ontime_perf_batch_df.col("Year")
+                        ,enriched_ontime_perf_batch_df.col("Month")
+                        , enriched_ontime_perf_batch_df.col("DayofMonth")
+                        ,enriched_ontime_perf_batch_df.col("DepTime")
+                        ,enriched_ontime_perf_batch_df.col("AirlineID")
+                        ,enriched_ontime_perf_batch_df.col("FlightNum")
+                        )
+                )
+                .where(
+                        col("Year").equalTo("2008")
+                        .and(
+                            col("Origin").equalTo("BOS")
+                            .and(col("Dest").equalTo("ATL")
+                                    .and(col("Month").equalTo(4))
+                            )
+                            .or(
+                                col("Origin").equalTo("ATL")
+                                .and(col("Dest").equalTo("LAX"))
+                                    .and(col("Month").equalTo(4))
+                            )
+                            .or(
+                                col("Origin").equalTo("PHX")
+                                        .and(col("Dest").equalTo("JFK"))
+                                        .and(col("Month").equalTo(9))
+                            ).or(
+                                col("Origin").equalTo("JFK")
+                                        .and(col("Dest").equalTo("MSP"))
+                                        .and(col("Month").equalTo(9))
+                            ).or(
+                                col("Origin").equalTo("DFW")
+                                        .and(col("Dest").equalTo("STL"))
+                                        .and(col("Month").equalTo(1))
+                            ).or(
+                                col("Origin").equalTo("STL")
+                                        .and(col("Dest").equalTo("ORD"))
+                                        .and(col("Month").equalTo(1))
+                            ).or(
+                                col("Origin").equalTo("LAX")
+                                        .and(col("Dest").equalTo("MIA"))
+                                        .and(col("Month").equalTo(5))
+                            ).or(
+                                col("Origin").equalTo("MIA")
+                                        .and(col("Dest").equalTo("LAX"))
+                                        .and(col("Month").equalTo(1))
+                            )
+                        )
 
+                );
+
+        enriched_ontime_perf_task2_subset_df.coalesce(1)
+                .write()
+                .format("csv")
+                .mode("overwrite")
+                .option("sep", ",")
+                .option("header", "true")
+                .save(enrichedOntimePerf2Task2Subset);
 
     }
 

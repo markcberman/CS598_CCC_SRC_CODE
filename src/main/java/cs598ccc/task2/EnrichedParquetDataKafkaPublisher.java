@@ -131,10 +131,10 @@ public class EnrichedParquetDataKafkaPublisher {
                 .withColumn("id", functions.hash(enrichedData_df.col("Year"),enrichedData_df.col("Month"), enrichedData_df.col("DayofMonth"),enrichedData_df.col("DepTime"),enrichedData_df.col("AirlineID"),enrichedData_df.col("FlightNum")));
 
 
-        Dataset<Row> counts = enrichedData_df.groupBy("origin").count();
-        counts.writeStream()
-                .outputMode("complete")
+        enrichedData_df.writeStream()
+                .outputMode("append")
                 .format("console")
+                .queryName("console")
                 .start();
 
 
