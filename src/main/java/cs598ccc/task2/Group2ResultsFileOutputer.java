@@ -80,11 +80,11 @@ public class Group2ResultsFileOutputer {
         logger.info("query2dot2KafkaTopic: " + query2dot2KafkaTopic);
         query2dot4KafkaTopic = prop.getProperty("query2dot4KafkaTopic","query2dot4-multipart");
         logger.info("query2dot4KafkaTopic: " + query2dot4KafkaTopic);
-        query2dot1Path = prop.getProperty("query2dot1Path", "hdfs:///cs598ccc/queryResults/task2/query2dot1");
+        query2dot1Path = prop.getProperty("query2dot1Path", "/home/markcb2/queryResults/task2/query2dot1");
         logger.info("query2dot1Path: " + query2dot1Path);
-        query2dot2Path = prop.getProperty("query2dot2Path", "hdfs:///cs598ccc/queryResults/task2/query2dot2");
+        query2dot2Path = prop.getProperty("query2dot2Path", "/home/markcb2/queryResults/task2/query2dot2");
         logger.info("query2dot2Path: " + query2dot2Path);
-        query2dot4Path = prop.getProperty("query2dot4Path", "hdfs:///cs598ccc/queryResults/task2/query2dot4");
+        query2dot4Path = prop.getProperty("query2dot4Path", "/home/markcb2/queryResults/task2/query2dot4");
         logger.info("query2dot4Path: " + query2dot4Path);
         query2dot1KafkaTopicMinPartitions = Integer.valueOf(prop.getProperty("query2dot1KafkaTopicMinPartitions","1"));
         logger.info("query2dot1KafkaTopicMinPartitions: " + query2dot1KafkaTopicMinPartitions);

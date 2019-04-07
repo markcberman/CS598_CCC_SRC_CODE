@@ -405,7 +405,7 @@ public class SchemaCreator {
                         DataTypes.StringType,
                         false),
                 DataTypes.createStructField(
-                        "Dest",
+                        "leg1_timestamp",
                         DataTypes.StringType,
                         false),
                 DataTypes.createStructField(
@@ -442,6 +442,99 @@ public class SchemaCreator {
 
     }
 
+    public static StructType createQuery3dot2Schema(){
+        StructType mySchema = DataTypes.createStructType(new StructField[]{ //#A
+                DataTypes.createStructField(
+                        "id",
+                        DataTypes.LongType,
+                        false),
+                DataTypes.createStructField(
+                        "leg1_timestamp",
+                        DataTypes.TimestampType,
+                        false),
+                DataTypes.createStructField(
+                        "Leg1_Month",
+                        DataTypes.IntegerType,
+                        false),
+                DataTypes.createStructField(
+                        "Leg1_Origin",
+                        DataTypes.StringType,
+                        false),
+                DataTypes.createStructField(
+                        "Leg1_Dest",
+                        DataTypes.StringType,
+                        false),
+                DataTypes.createStructField(
+                        "Leg1_Carrier",
+                        DataTypes.StringType,
+                        false),
+                DataTypes.createStructField(
+                        "Leg1_FlightNum",
+                        DataTypes.StringType,
+                        false),
+                DataTypes.createStructField(
+                        "Leg1_FlightDate",
+                        DataTypes.DateType,
+                        false),
+                DataTypes.createStructField(
+                        "Leg1_DepTime",
+                        DataTypes.IntegerType,
+                        false),
+                DataTypes.createStructField(
+                        "Leg1_ArrTime",
+                        DataTypes.IntegerType,
+                        false),
+                DataTypes.createStructField(
+                        "Leg1_ArrDelay",
+                        DataTypes.createDecimalType(10,2),
+                        false),
+                DataTypes.createStructField(
+                        "leg2_timestamp",
+                        DataTypes.TimestampType,
+                        false),
+                DataTypes.createStructField(
+                        "Leg2_Origin",
+                        DataTypes.StringType,
+                        false),
+                DataTypes.createStructField(
+                        "Leg2_Dest",
+                        DataTypes.StringType,
+                        false),
+                DataTypes.createStructField(
+                        "Leg2_Carrier",
+                        DataTypes.StringType,
+                        false),
+                DataTypes.createStructField(
+                        "Leg2_FlightNum",
+                        DataTypes.StringType,
+                        false),
+                DataTypes.createStructField(
+                        "Leg2_FlightDate",
+                        DataTypes.DateType,
+                        false),
+                DataTypes.createStructField(
+                        "Leg2_DepTime",
+                        DataTypes.IntegerType,
+                        false),
+                DataTypes.createStructField(
+                        "Leg2_ArrTime",
+                        DataTypes.IntegerType,
+                        false),
+                DataTypes.createStructField(
+                        "Leg2_ArrDelay",
+                        DataTypes.createDecimalType(10,2),
+                        false),
+                DataTypes.createStructField(
+                        "totalTripDelayInMinutes",
+                        DataTypes.createDecimalType(10,2),
+                        false)
+
+        });
+
+        return mySchema;
+
+    }
+
 
 
 
@@ -453,6 +546,8 @@ public class SchemaCreator {
         System.out.println(SchemaCreator.createQuery2dot1Schema());
         System.out.println(SchemaCreator.createQuery2dot2Schema());
         System.out.println(SchemaCreator.createQuery2dot4Schema());
+        System.out.println(SchemaCreator.createQuery3dot2Schema());
+
     }
 
 }

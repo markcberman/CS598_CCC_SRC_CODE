@@ -226,7 +226,9 @@ public class Group3JoinProcessor {
 
         Dataset<Row> multi_city_flight_ranked_df = multi_city_flight.withColumn("rank", rank().over(windowSpec_3_2))
                 .where(col("rank").lt(2))
-                .drop("rank");
+                .drop("rank")
+                .orderBy(asc("Leg1_FlightDate"), asc("Leg1_Origin"), asc("Leg1_Dest"), asc("Leg2_Dest"))
+                ;
 
         /*
 
@@ -244,6 +246,8 @@ public class Group3JoinProcessor {
 
         //logger.info("Saving query 3.2 multi-city flights filtered results that will be streamed as " + multi_city_flight_ranked_df.count() + " Kafka messages ");
 
+        multi_city_flight_ranked_df.show(1000);
+
         logger.info("Saving query 3.2 multi-city flights filtered results that will be streamed to Kafka topic: " + query3dot2_ns_KafkaTopic);
 
         multi_city_flight_ranked_df.selectExpr("CAST(id AS STRING) AS key", "to_json(struct(*)) AS value")
@@ -252,7 +256,6 @@ public class Group3JoinProcessor {
                 .option("topic", query3dot2_ns_KafkaTopic.trim())
                 .option("kafka.bootstrap.servers", kafkaHost)
                 .option("checkpointLocation", query3dot2_ns_CheckpointLocation)
-                .option("kafka.acks","0")
                 .save();
 
 
