@@ -10,6 +10,7 @@ import org.apache.spark.sql.streaming.StreamingQuery;
 import org.apache.spark.sql.streaming.StreamingQueryException;
 import org.apache.spark.sql.streaming.StreamingQueryListener;
 import org.apache.spark.sql.streaming.Trigger;
+import org.apache.spark.sql.types.StructType;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -111,6 +112,37 @@ public class Group3StreamingProcessor {
 
         logger.info("SparkSession Started.");
 
+
+        //debugging code
+        /*
+        Dataset<Row> enriched_ontime_perf_2008_csv_df = spark.read()
+                .format("csv")
+                .option("sep", ",")
+                .option("header", "true")
+                .load("/Users/markberman/data/cs598ccc/csv_data/task2/enriched_ontimeperf_task2_subset");
+        ;
+
+        StructType schema_csv = enriched_ontime_perf_2008_csv_df.schema();
+        logger.info("derived schema from enriched_ontimeperf_task2_subset csv");
+        enriched_ontime_perf_2008_csv_df.printSchema();
+
+        Dataset<Row> enriched_ontime_perf_2008_parquet_df = spark.read().format("parquet")
+                .load("/Users/markberman/data/cs598ccc/parquet_data/task2/enriched_ontimeperf_task2_subset");
+        StructType schema_parquet = enriched_ontime_perf_2008_parquet_df.schema();
+        logger.info("derived schema from enriched_ontimeperf_task2_subset parquet");
+        enriched_ontime_perf_2008_parquet_df.printSchema();
+
+        */
+
+        //debugging code
+
+
+
+
+
+
+
+
         spark.streams().addListener(new StreamingQueryListener() {
             @Override
             public void onQueryStarted(QueryStartedEvent queryStarted) {
@@ -141,6 +173,19 @@ public class Group3StreamingProcessor {
                 .load();
 
 
+
+        /*
+        Dataset<Row> converted_kafka_input_leg1 = kafka_input_leg1.selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)", "CAST(timestamp AS TIMESTAMP)")
+                .select(col("key"),from_json(col("value"), schema_parquet).as("data"), col("timestamp"))
+                .select("key", "data.*", "timestamp");
+
+        converted_kafka_input_leg1.writeStream()
+                .outputMode("append")
+                .format("console")
+                .queryName("converted_kafka_input_leg1 console")
+                .start();
+        */
+
         Dataset<Row> kafka_input_leg2 = spark
                 .readStream()
                 .format("kafka")
@@ -152,6 +197,18 @@ public class Group3StreamingProcessor {
                 .option("kafkaConsumer.pollTimeoutMs",30000)
                 .load();
 
+        /*
+        Dataset<Row> converted_kafka_input_leg2 = kafka_input_leg2.selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)", "CAST(timestamp AS TIMESTAMP)")
+                .select(col("key"),from_json(col("value"), schema_parquet).as("data"), col("timestamp"))
+                .select("key", "data.*", "timestamp");
+
+        converted_kafka_input_leg2.writeStream()
+                .outputMode("append")
+                .format("console")
+                .queryName("converted_kafka_input_leg2 console")
+                .start();
+
+        */
 
         Dataset<Row> enriched_ontime_perf_df_leg1 = kafka_input_leg1.selectExpr("CAST(value AS STRING)", "CAST(timestamp AS TIMESTAMP)")
                 .select(from_json(col("value"), SchemaCreator.createSchemaWithId()).as("data"), col("timestamp"))
@@ -161,6 +218,15 @@ public class Group3StreamingProcessor {
 
         enriched_ontime_perf_df_leg1.dropDuplicates("id");
 
+        /*
+
+        enriched_ontime_perf_df_leg1.writeStream()
+                .outputMode("append")
+                .format("console")
+                .queryName("enriched_ontime_perf_df_leg1 console")
+                .start();
+
+        */
 
         Dataset<Row> leg1 = enriched_ontime_perf_df_leg1
                 .withColumnRenamed("id","Leg1_Id")
@@ -188,6 +254,15 @@ public class Group3StreamingProcessor {
 
         enriched_ontime_perf_df_leg2.dropDuplicates("id");
 
+
+        /*
+
+        enriched_ontime_perf_df_leg2.writeStream()
+                .outputMode("append")
+                .format("console")
+                .queryName("enriched_ontime_perf_df_leg2 console")
+                .start();
+       */
 
         Dataset<Row> leg2 = enriched_ontime_perf_df_leg2
                 .withColumnRenamed("id","Leg2_Id")
@@ -226,13 +301,13 @@ public class Group3StreamingProcessor {
                 //.orderBy(asc("Leg1_Month"), asc("Leg1_Origin"), asc("Leg1_Dest"), asc("Leg2_Dest"),asc("Leg1_FlightDate"),asc("totalTripDelayInMinutes"))
                 ;
 
-        /*
+
         multi_city_flight.writeStream()
                 .outputMode("append")
                 .format("console")
-                .queryName("console")
+                .queryName("multi_city_flight console")
                 .start();
-        */
+
 
         StreamingQuery query3Dot2KafkaSink = multi_city_flight.selectExpr("CAST(id AS STRING) AS key", "to_json(struct(*)) AS value")
                 .writeStream()

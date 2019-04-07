@@ -10,6 +10,7 @@ import org.apache.spark.sql.streaming.StreamingQuery;
 import org.apache.spark.sql.streaming.StreamingQueryException;
 import org.apache.spark.sql.streaming.StreamingQueryListener;
 import org.apache.spark.sql.streaming.Trigger;
+import org.apache.spark.sql.types.StructType;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -36,6 +37,7 @@ public class Group3Preprocessor {
     private String enrichedOntimePerf2Task2Subset = null;
     private Boolean shouldUse2008SubsetData = null;
     private String enrichedParquetDataPath = null;
+    private String enrichedOntimePerf2Task2SubsetParquet = null;
 
 
     public static void main(String[] args){
@@ -102,6 +104,8 @@ public class Group3Preprocessor {
         logger.info("shouldUse2008SubsetData: " + shouldUse2008SubsetData);
         enrichedParquetDataPath = prop.getProperty("enrichedParquetDataPath", "hdfs:///cs598ccc/parquet_data/ontimeperf");
         logger.info("enrichedParquetDataPath: " + enrichedParquetDataPath);
+        logger.info("enrichedOntimePerf2Task2Subset: " + enrichedOntimePerf2Task2Subset);
+        enrichedOntimePerf2Task2SubsetParquet = prop.getProperty("enrichedOntimePerf2Task2SubsetParquet", "hdfs:///cs598ccc/parquet_data/task2/enriched_ontimeperf_task2_subset");
 
 
         if (input != null) {
@@ -120,6 +124,7 @@ public class Group3Preprocessor {
                 .getOrCreate();
 
         logger.info("SparkSession Started.");
+
 
         spark.streams().addListener(new StreamingQueryListener() {
             @Override
@@ -142,12 +147,19 @@ public class Group3Preprocessor {
 
         if (shouldUse2008SubsetData){
             logger.debug("Using 2008 subset data");
+
+            /*
             enriched_ontime_perf_2008_df = spark.read()
                     .format("csv")
                     .option("sep", ",")
                     .option("header", "true")
                     .load(enrichedOntimePerf2Task2Subset)
             ;
+            */
+
+            enriched_ontime_perf_2008_df = spark.read().format("parquet")
+                    .load(enrichedOntimePerf2Task2SubsetParquet);
+            enriched_ontime_perf_2008_df.printSchema();
 
         }
         else{

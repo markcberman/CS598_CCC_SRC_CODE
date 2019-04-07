@@ -25,6 +25,7 @@ public class Setup {
     private String originAirportsPath = null;
     private String destAirportsPath = null;
     private String enrichedOntimePerf2Task2Subset = null;
+    private String enrichedOntimePerf2Task2SubsetParquet = null;
 
 
     public static void main(String[] args){
@@ -79,6 +80,7 @@ public class Setup {
         logger.info("destAirportsPath: " + destAirportsPath);
         enrichedOntimePerf2Task2Subset = prop.getProperty("enrichedOntimePerf2Task2Subset", "hdfs:///cs598ccc/csv_data/task2/enriched_ontimeperf_task2_subset");
         logger.info("enrichedOntimePerf2Task2Subset: " + enrichedOntimePerf2Task2Subset);
+        enrichedOntimePerf2Task2SubsetParquet = prop.getProperty("enrichedOntimePerf2Task2SubsetParquet", "hdfs:///cs598ccc/parquet_data/task2/enriched_ontimeperf_task2_subset");
 
 
 
@@ -192,6 +194,14 @@ public class Setup {
                 .option("sep", ",")
                 .option("header", "true")
                 .save(enrichedOntimePerf2Task2Subset);
+
+
+
+        enriched_ontime_perf_task2_subset_df.coalesce(1)
+                .write()
+                .format("parquet")
+                .mode("overwrite")
+                .save(enrichedOntimePerf2Task2SubsetParquet);
 
     }
 
