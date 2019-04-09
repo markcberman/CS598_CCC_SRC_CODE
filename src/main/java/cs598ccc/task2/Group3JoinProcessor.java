@@ -89,11 +89,11 @@ public class Group3JoinProcessor {
         logger.info("enrichedData2008KafkaTopicMinmaxOffsetsPerTrigger: " + enrichedData2008KafkaTopicMinmaxOffsetsPerTrigger);
         query3dot2_ns_KafkaTopic = prop.getProperty("query3dot2_ns_KafkaTopic", "query3dot2-ns-multipart");
         logger.info("query3dot2_ns_KafkaTopic: " + query3dot2_ns_KafkaTopic);
-        query3dot2_ns_CheckpointLocation = prop.getProperty("query3dot2_ns_CheckpointLocation", "~/checkpoint/query3dot2_ns");
+        query3dot2_ns_CheckpointLocation = prop.getProperty("query3dot2_ns_CheckpointLocation", "/scratch/checkpoint/query3dot2_ns");
         logger.info("query3dot2_ns_CheckpointLocation: " + query3dot2_ns_CheckpointLocation);
         query3dot2TriggerProcessingTimeMillis = Integer.valueOf(prop.getProperty("query3dot2TriggerProcessingTimeMillis", "1000"));
         logger.info("query3dot2TriggerProcessingTimeMillis: " + query3dot2TriggerProcessingTimeMillis);
-        enrichedParquetDataPath = prop.getProperty("enrichedParquetDataPath", "hdfs:///cs598ccc/parquet_data/ontimeperf");
+        enrichedParquetDataPath = prop.getProperty("enrichedParquetDataPath", "hdfs:///cs598ccc/parquet_data/enriched_ontimeperf");
 
 
         if (input != null) {

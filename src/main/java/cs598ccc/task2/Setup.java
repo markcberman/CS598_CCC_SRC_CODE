@@ -72,15 +72,15 @@ public class Setup {
         prop.load(input);
         master = prop.getProperty("master", "local[*]");
         logger.info("master: " + master);
-        enrichedParquetDataPath = prop.getProperty("enrichedParquetDataPath", "hdfs:///cs598ccc/parquet_data/ontimeperf");
+        enrichedParquetDataPath = prop.getProperty("enrichedParquetDataPath", "hdfs:///cs598ccc/parquet_data/enriched_ontimeperf");
         logger.info("enrichedParquetDataPath: " + enrichedParquetDataPath);
-        originAirportsPath = prop.getProperty("originAirportsPath", "hdfs:///cs598ccc/ref_data/origin_airports");
+        originAirportsPath = prop.getProperty("originAirportsPath", "/home/markcb2/csv_data/task2/origin_airports");
         logger.info("originAirportsPath: " + originAirportsPath);
-        destAirportsPath = prop.getProperty("destAirportsPath","hdfs:///cs598ccc/ref_data/dest_airports");
+        destAirportsPath = prop.getProperty("destAirportsPath","/home/markcb2/csv_data/task2/dest_airports");
         logger.info("destAirportsPath: " + destAirportsPath);
-        enrichedOntimePerf2Task2Subset = prop.getProperty("enrichedOntimePerf2Task2Subset", "hdfs:///cs598ccc/csv_data/task2/enriched_ontimeperf_task2_subset");
+        enrichedOntimePerf2Task2Subset = prop.getProperty("enrichedOntimePerf2Task2Subset", "/home/markcb2/csv_data/task2/enriched_ontimeperf_task2_subset");
         logger.info("enrichedOntimePerf2Task2Subset: " + enrichedOntimePerf2Task2Subset);
-        enrichedOntimePerf2Task2SubsetParquet = prop.getProperty("enrichedOntimePerf2Task2SubsetParquet", "hdfs:///cs598ccc/parquet_data/task2/enriched_ontimeperf_task2_subset");
+        enrichedOntimePerf2Task2SubsetParquet = prop.getProperty("enrichedOntimePerf2Task2SubsetParquet", " hdfs:///cs598ccc/parquet_data/enriched_ontimeperf_task2_subset");
 
 
 

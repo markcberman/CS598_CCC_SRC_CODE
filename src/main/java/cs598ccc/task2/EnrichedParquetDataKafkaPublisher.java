@@ -78,11 +78,11 @@ public class EnrichedParquetDataKafkaPublisher {
             logger.info("master: " + master);
             enrichedParquetDataMaxFilesPerTrigger = Integer.valueOf((prop.getProperty("enrichedParquetDataMaxFilesPerTrigger", "4")));
             logger.info("enrichedParquetDataMaxFilesPerTrigger: " + enrichedParquetDataMaxFilesPerTrigger);
-            enrichedParquetDataPath = prop.getProperty("enrichedParquetDataPath", "hdfs:///cs598ccc/parquet_data/ontimeperf");
+            enrichedParquetDataPath = prop.getProperty("enrichedParquetDataPath", "hdfs:///cs598ccc/parquet_data/enriched_ontimeperf");
             logger.info("enrichedParquetDataPath: " + enrichedParquetDataPath);
             kafkaHost = prop.getProperty("kafkaHost", "localhost:6667");
             logger.info("kafkaHost: " + kafkaHost);
-            enrichedParquetDataCheckpointLocation = prop.getProperty("enrichedParquetDataCheckpointLocation", "~/checkpoint/EnrichedParquetDataKafkaPublisher");
+            enrichedParquetDataCheckpointLocation = prop.getProperty("enrichedParquetDataCheckpointLocation", "/scratch/checkpoint/EnrichedParquetDataKafkaPublisher");
             logger.info("enrichedParquetDataCheckpointLocation: " + enrichedParquetDataCheckpointLocation);
             enrichedParquetDataTriggerProcessingTimeMillis =  Integer.valueOf(prop.getProperty("enrichedParquetDataTriggerProcessingTimeMillis", "1000"));
             logger.info("enrichedParquetDataTriggerProcessingTimeMillis: " + enrichedParquetDataTriggerProcessingTimeMillis);

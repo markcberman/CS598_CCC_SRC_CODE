@@ -38,6 +38,7 @@ public class Group3Preprocessor {
     private Boolean shouldUse2008SubsetData = null;
     private String enrichedParquetDataPath = null;
     private String enrichedOntimePerf2Task2SubsetParquet = null;
+    private Integer filterByMonth =null;
 
 
     public static void main(String[] args){
@@ -95,17 +96,19 @@ public class Group3Preprocessor {
         logger.info("enrichedDataKafkaTopicMinmaxOffsetsPerTrigger: " + enrichedDataKafkaTopicMinmaxOffsetsPerTrigger);
         enrichedData2008KafkaTopic = prop.getProperty("enrichedData2008KafkaTopic", "enriched-cleansed-data-2008-multipart");
         logger.info("enrichedData2008KafkaTopic: " + enrichedData2008KafkaTopic);
-        enrichedData2008CheckpointLocation = prop.getProperty("enrichedData2008CheckpointLocation", "~/checkpoint/enrichedData2008");
+        enrichedData2008CheckpointLocation = prop.getProperty("enrichedData2008CheckpointLocation", "/scratch/checkpoint/enrichedData2008");
         logger.info("enrichedData2008CheckpointLocation: " + enrichedData2008CheckpointLocation);
         enrichedData2008TriggerProcessingTimeMillis = Integer.valueOf(prop.getProperty("enrichedData2008TriggerProcessingTimeMillis", "1000"));
         enrichedOntimePerf2Task2Subset = prop.getProperty("enrichedOntimePerf2Task2Subset", "hdfs:///cs598ccc/csv_data/task2/enriched_ontimeperf_task2_subset");
         logger.info("enrichedOntimePerf2Task2Subset: " + enrichedOntimePerf2Task2Subset);
         shouldUse2008SubsetData = Boolean.valueOf(prop.getProperty("shouldUse2008SubsetData","true"));
         logger.info("shouldUse2008SubsetData: " + shouldUse2008SubsetData);
-        enrichedParquetDataPath = prop.getProperty("enrichedParquetDataPath", "hdfs:///cs598ccc/parquet_data/ontimeperf");
+        enrichedParquetDataPath = prop.getProperty("enrichedParquetDataPath", "hdfs:///cs598ccc/parquet_data/enriched_ontimeperf");
         logger.info("enrichedParquetDataPath: " + enrichedParquetDataPath);
-        logger.info("enrichedOntimePerf2Task2Subset: " + enrichedOntimePerf2Task2Subset);
-        enrichedOntimePerf2Task2SubsetParquet = prop.getProperty("enrichedOntimePerf2Task2SubsetParquet", "hdfs:///cs598ccc/parquet_data/task2/enriched_ontimeperf_task2_subset");
+        enrichedOntimePerf2Task2SubsetParquet = prop.getProperty("enrichedOntimePerf2Task2SubsetParquet",  "hdfs:///cs598ccc/parquet_data/enriched_ontimeperf_task2_subset");
+        logger.info("enrichedOntimePerf2Task2SubsetParquet: " + enrichedOntimePerf2Task2SubsetParquet);
+        filterByMonth = Integer.valueOf(prop.getProperty("filterByMonth" + "5"));
+        logger.info("filterByMonth: " + filterByMonth);
 
 
         if (input != null) {
