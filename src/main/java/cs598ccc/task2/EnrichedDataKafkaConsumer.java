@@ -11,7 +11,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import static org.apache.spark.sql.functions.*;
 import static org.apache.spark.sql.functions.col;
 
