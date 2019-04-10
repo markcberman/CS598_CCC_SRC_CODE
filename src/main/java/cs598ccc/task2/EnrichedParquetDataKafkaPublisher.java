@@ -131,12 +131,13 @@ public class EnrichedParquetDataKafkaPublisher {
                 .withColumn("id", functions.hash(enrichedData_df.col("Year"),enrichedData_df.col("Month"), enrichedData_df.col("DayofMonth"),enrichedData_df.col("DepTime"),enrichedData_df.col("AirlineID"),enrichedData_df.col("FlightNum")));
 
 
+        /*
         enrichedData_df.writeStream()
                 .outputMode("append")
                 .format("console")
                 .queryName("console")
                 .start();
-
+        */
 
 
         StreamingQuery kafkaSink =  enrichedData_df.selectExpr("CAST(id AS STRING) AS key", "to_json(struct(*)) AS value")

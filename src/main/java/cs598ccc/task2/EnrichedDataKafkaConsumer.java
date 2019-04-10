@@ -178,11 +178,12 @@ public class EnrichedDataKafkaConsumer {
                 .orderBy(desc("totalArrivalsAndDepartures"))
                 ;
 
+        /*
         airportArrivalsAndDepartures.writeStream()
                 .outputMode("complete")
                 .format("console")
                 .start();
-
+        */
 
         Dataset<Row> airline_on_time_arrival_performance = jsonified_data
                 .withColumn("group", lit(1))
@@ -203,11 +204,12 @@ public class EnrichedDataKafkaConsumer {
                 .orderBy(asc("avg_time_added"))
                 ;
 
+        /*
         airlineOnTimeArrivalPerformance_df.writeStream()
                 .outputMode("complete")
                 .format("console")
                 .start();
-
+        */
 
         StreamingQuery query1Dot1KafkaSink = airportArrivalsAndDepartures.selectExpr("CAST(origin AS STRING) AS key", "to_json(struct(*)) AS value")
                 .writeStream()
