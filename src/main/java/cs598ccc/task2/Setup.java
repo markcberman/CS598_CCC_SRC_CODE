@@ -27,6 +27,8 @@ public class Setup {
     private String enrichedOntimePerf2Task2Subset = null;
     private String enrichedOntimePerf2Task2SubsetParquet = null;
     private String sparkLogLevel = null;
+    private String enrichedOntimePerfTask2Group2Q1Q2 = null;
+    private String enrichedOntimePerfTask2Group2Q4 = null;
 
 
     public static void main(String[] args){
@@ -81,9 +83,12 @@ public class Setup {
         logger.info("destAirportsPath: " + destAirportsPath);
         enrichedOntimePerf2Task2Subset = prop.getProperty("enrichedOntimePerf2Task2Subset", "/home/markcb2/csv_data/task2/enriched_ontimeperf_task2_subset");
         logger.info("enrichedOntimePerf2Task2Subset: " + enrichedOntimePerf2Task2Subset);
-        enrichedOntimePerf2Task2SubsetParquet = prop.getProperty("enrichedOntimePerf2Task2SubsetParquet", " hdfs:///cs598ccc/parquet_data/enriched_ontimeperf_task2_subset");
+        enrichedOntimePerf2Task2SubsetParquet = prop.getProperty("enrichedOntimePerf2Task2SubsetParquet", "hdfs:///cs598ccc/parquet_data/enriched_ontimeperf_task2_subset");
         sparkLogLevel = prop.getProperty("sparkLogLevel","WARN");
         logger.info("sparkLogLevel: " + sparkLogLevel);
+        enrichedOntimePerfTask2Group2Q1Q2 = prop.getProperty("enrichedOntimePerfTask2Group2Q1Q2", "hdfs:///cs598ccc/parquet_data/enriched_ontimeperf_task2_group2_q1_q2");
+        logger.info("enrichedOntimePerfTask2Group2Q1Q2: " + enrichedOntimePerfTask2Group2Q1Q2);
+        enrichedOntimePerfTask2Group2Q4 = prop.getProperty("enrichedOntimePerfTask2Group2Q4", "\"hdfs:///cs598ccc/parquet_data/enriched_ontimeperf_task2_group2_q4");
 
 
 
@@ -202,12 +207,71 @@ public class Setup {
 
 
 
-        enriched_ontime_perf_task2_subset_df.coalesce(1)
+        enriched_ontime_perf_task2_subset_df.coalesce(10)
                 .write()
                 .format("parquet")
                 .mode("overwrite")
                 .save(enrichedOntimePerf2Task2SubsetParquet);
 
+
+        Dataset<Row> enriched_ontime_perf_task2_group2_qdot1_qdot2_subset_df = enriched_ontime_perf_batch_df
+                .withColumn("id", functions.hash(enriched_ontime_perf_batch_df.col("Year")
+                        ,enriched_ontime_perf_batch_df.col("Month")
+                        , enriched_ontime_perf_batch_df.col("DayofMonth")
+                        ,enriched_ontime_perf_batch_df.col("DepTime")
+                        ,enriched_ontime_perf_batch_df.col("AirlineID")
+                        ,enriched_ontime_perf_batch_df.col("FlightNum")
+                        )
+                )
+                .where(col("Origin").isin("SRQ","CMH","JFK","SEA","BOS"));
+
+
+        enriched_ontime_perf_task2_group2_qdot1_qdot2_subset_df.coalesce(10)
+                .write()
+                .format("parquet")
+                .mode("overwrite")
+                .save(enrichedOntimePerfTask2Group2Q1Q2);
+
+
+        logger.info("*******************  group2q1_q2_subset row count: " + enriched_ontime_perf_task2_group2_qdot1_qdot2_subset_df.count());
+        //enriched_ontime_perf_task2_group2_qdot1_qdot2_subset_df.show(200);
+
+
+
+        Dataset<Row> enriched_ontime_perf_task2_group2_qdot4_subset_df = enriched_ontime_perf_batch_df
+                .withColumn("id", functions.hash(enriched_ontime_perf_batch_df.col("Year")
+                        ,enriched_ontime_perf_batch_df.col("Month")
+                        , enriched_ontime_perf_batch_df.col("DayofMonth")
+                        ,enriched_ontime_perf_batch_df.col("DepTime")
+                        ,enriched_ontime_perf_batch_df.col("AirlineID")
+                        ,enriched_ontime_perf_batch_df.col("FlightNum")
+                        )
+                )
+                .where(
+                        col("Origin").equalTo("LGA").and(col("Dest").equalTo("BOS"))
+                                .or(col("Origin").equalTo("BOS").and(col("Dest").equalTo("LGA")))
+                                .or(col("Origin").equalTo("OKC").and(col("Dest").equalTo("DFW")))
+                                .or(col("Origin").equalTo("MSP").and(col("Dest").equalTo("ATL")))
+
+                );
+
+
+
+        enriched_ontime_perf_task2_group2_qdot4_subset_df.coalesce(10)
+                .write()
+                .format("parquet")
+                .mode("overwrite")
+                .save(enrichedOntimePerfTask2Group2Q4);
+
+
+        logger.info("*******************  group2q4_subset row count: " + enriched_ontime_perf_task2_group2_qdot4_subset_df.count());
+        //enriched_ontime_perf_task2_group2_qdot4_subset_df.show(200);
+
     }
+
+
+
+
+
 
 }
