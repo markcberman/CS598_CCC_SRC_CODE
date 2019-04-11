@@ -29,6 +29,11 @@ public class Setup {
     private String sparkLogLevel = null;
     private String enrichedOntimePerfTask2Group2Q1Q2 = null;
     private String enrichedOntimePerfTask2Group2Q4 = null;
+    private String enrichedOntimePerfTask2Group2Q1Q2Topic = null;
+    private String enrichedOntimePerfTask2Group2Q4Topic = null;
+    private String kafkaHost = null;
+    private String enrichedOntimePerfTask2Group2Q1Q2CheckpointLocation= null;
+    private String enrichedOntimePerfTask2Group2Q4CheckpointLocation = null;
 
 
     public static void main(String[] args){
@@ -89,6 +94,15 @@ public class Setup {
         enrichedOntimePerfTask2Group2Q1Q2 = prop.getProperty("enrichedOntimePerfTask2Group2Q1Q2", "hdfs:///cs598ccc/parquet_data/enriched_ontimeperf_task2_group2_q1_q2");
         logger.info("enrichedOntimePerfTask2Group2Q1Q2: " + enrichedOntimePerfTask2Group2Q1Q2);
         enrichedOntimePerfTask2Group2Q4 = prop.getProperty("enrichedOntimePerfTask2Group2Q4", "\"hdfs:///cs598ccc/parquet_data/enriched_ontimeperf_task2_group2_q4");
+        enrichedOntimePerfTask2Group2Q1Q2Topic = prop.getProperty("enrichedOntimePerfTask2Group2Q1Q2Topic", "enriched-cleansed-data-group-2-q1-q2-multipart");
+        logger.info("enrichedOntimePerfTask2Group2Q1Q2Topic: " + enrichedOntimePerfTask2Group2Q1Q2Topic);
+        enrichedOntimePerfTask2Group2Q4Topic = prop.getProperty("enrichedOntimePerfTask2Group2Q4Topic", "enriched-cleansed-data-group-2-q4-multipart");
+        logger.info("enrichedOntimePerfTask2Group2Q4Topic: " + enrichedOntimePerfTask2Group2Q4Topic );
+        kafkaHost = prop.getProperty("kafkaHost", "node1:6667");
+        logger.info("kafkaHost: " + kafkaHost);
+        enrichedOntimePerfTask2Group2Q1Q2CheckpointLocation = prop.getProperty("enrichedOntimePerfTask2Group2Q1Q2CheckpointLocation", "hdfs:///tmp/checkpoint/enrichedOntimePerfTask2Group2Q1Q2");
+        logger.info("enrichedOntimePerfTask2Group2Q1Q2CheckpointLocation: " + enrichedOntimePerfTask2Group2Q1Q2CheckpointLocation);
+        enrichedOntimePerfTask2Group2Q4CheckpointLocation = prop.getProperty("enrichedOntimePerfTask2Group2Q4CheckpointLocation", "hdfs:///tmp/checkpoint/enrichedOntimePerfTask2Group2Q4");
 
 
 
@@ -232,6 +246,14 @@ public class Setup {
                 .mode("overwrite")
                 .save(enrichedOntimePerfTask2Group2Q1Q2);
 
+        enriched_ontime_perf_task2_group2_qdot1_qdot2_subset_df.selectExpr("CAST(id AS STRING) AS key", "to_json(struct(*)) AS value")
+                .write()
+                .format("kafka")
+                .option("topic", enrichedOntimePerfTask2Group2Q1Q2Topic.trim())
+                .option("kafka.bootstrap.servers", kafkaHost)
+                .option("checkpointLocation", enrichedOntimePerfTask2Group2Q1Q2CheckpointLocation)
+                .save();
+
 
         logger.info("*******************  group2q1_q2_subset row count: " + enriched_ontime_perf_task2_group2_qdot1_qdot2_subset_df.count());
         //enriched_ontime_perf_task2_group2_qdot1_qdot2_subset_df.show(200);
@@ -264,8 +286,19 @@ public class Setup {
                 .save(enrichedOntimePerfTask2Group2Q4);
 
 
+        enriched_ontime_perf_task2_group2_qdot4_subset_df.selectExpr("CAST(id AS STRING) AS key", "to_json(struct(*)) AS value")
+                .write()
+                .format("kafka")
+                .option("topic", enrichedOntimePerfTask2Group2Q4Topic.trim())
+                .option("kafka.bootstrap.servers", kafkaHost)
+                .option("checkpointLocation", enrichedOntimePerfTask2Group2Q4CheckpointLocation)
+                .save();
+
+
         logger.info("*******************  group2q4_subset row count: " + enriched_ontime_perf_task2_group2_qdot4_subset_df.count());
         //enriched_ontime_perf_task2_group2_qdot4_subset_df.show(200);
+
+
 
     }
 

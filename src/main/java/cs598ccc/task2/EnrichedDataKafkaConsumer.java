@@ -161,7 +161,7 @@ public class EnrichedDataKafkaConsumer {
 
         logger.info("Kafka source is streaming: "+ jsonified_data.isStreaming());
 
-
+        /*
 
         jsonified_data.writeStream()
                 .outputMode("append")
@@ -169,6 +169,7 @@ public class EnrichedDataKafkaConsumer {
                 .start();
 
 
+        */
 
         Dataset<Row> airportArrivalsAndDepartures = jsonified_data.groupBy("origin")
                 .agg(
@@ -227,7 +228,7 @@ public class EnrichedDataKafkaConsumer {
                 .option("topic", query1dot1KafkaTopic.trim())
                 .option("kafka.bootstrap.servers", kafkaHost)
                 .option("checkpointLocation", query1dot1CheckpointLocation)
-                .trigger(Trigger.ProcessingTime(query1dot1TriggerProcessingTimeMillis.intValue(), TimeUnit.MILLISECONDS))
+                //.trigger(Trigger.ProcessingTime(query1dot1TriggerProcessingTimeMillis.intValue(), TimeUnit.MILLISECONDS))
                 .start();
 
         logger.info("Query id for streaming to Kafka sink is: " + query1Dot1KafkaSink.id());

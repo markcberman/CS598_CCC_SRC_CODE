@@ -109,7 +109,7 @@ public class Group3Preprocessor {
         logger.info("enrichedParquetDataPath: " + enrichedParquetDataPath);
         enrichedOntimePerf2Task2SubsetParquet = prop.getProperty("enrichedOntimePerf2Task2SubsetParquet",  "hdfs:///cs598ccc/parquet_data/enriched_ontimeperf_task2_subset");
         logger.info("enrichedOntimePerf2Task2SubsetParquet: " + enrichedOntimePerf2Task2SubsetParquet);
-        filterByMonth = Integer.valueOf(prop.getProperty("filterByMonth" + "5"));
+        filterByMonth = Integer.valueOf(prop.getProperty("filterByMonth","5"));
         logger.info("filterByMonth: " + filterByMonth);
         sparkLogLevel = prop.getProperty("sparkLogLevel","WARN");
         logger.info("sparkLogLevel: " + sparkLogLevel);

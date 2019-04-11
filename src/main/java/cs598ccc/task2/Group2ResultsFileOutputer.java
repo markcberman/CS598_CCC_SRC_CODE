@@ -144,7 +144,7 @@ public class Group2ResultsFileOutputer {
                 .drop("rank")
                 ;
 
-        query2_1_ranked_df.show(200);
+        query2_1_ranked_df.show(50);
 
         query2_1_ranked_df.orderBy("Origin")
                 .coalesce(1)
@@ -188,7 +188,7 @@ public class Group2ResultsFileOutputer {
                 .where(col("rank").lt(11))
                 .drop("rank");
 
-        query2_2_ranked_df.show(200);
+        query2_2_ranked_df.show(50);
 
 
         query2_2_ranked_df.orderBy("Origin")
@@ -226,7 +226,7 @@ public class Group2ResultsFileOutputer {
                 )
                 .orderBy(asc("Origin"),asc("Dest"));
 
-        query2dot4_reduced_data.show(200);
+        query2dot4_reduced_data.show(20);
 
 
         query2dot4_reduced_data.orderBy(asc("Origin"),asc("Dest"))
