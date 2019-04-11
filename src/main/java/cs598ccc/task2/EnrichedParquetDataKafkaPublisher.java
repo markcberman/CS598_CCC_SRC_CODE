@@ -31,6 +31,7 @@ public class EnrichedParquetDataKafkaPublisher {
     private String enrichedDataKafkaTopic = null;
     private String enrichedParquetDataCheckpointLocation = null;
     private Integer enrichedParquetDataTriggerProcessingTimeMillis = null;
+    private String sparkLogLevel = null;
 
     public static void main(String[] args){
 
@@ -86,6 +87,8 @@ public class EnrichedParquetDataKafkaPublisher {
             logger.info("enrichedParquetDataCheckpointLocation: " + enrichedParquetDataCheckpointLocation);
             enrichedParquetDataTriggerProcessingTimeMillis =  Integer.valueOf(prop.getProperty("enrichedParquetDataTriggerProcessingTimeMillis", "1000"));
             logger.info("enrichedParquetDataTriggerProcessingTimeMillis: " + enrichedParquetDataTriggerProcessingTimeMillis);
+            sparkLogLevel = prop.getProperty("sparkLogLevel","WARN");
+            logger.info("sparkLogLevel: " + sparkLogLevel);
 
 
 
@@ -101,6 +104,8 @@ public class EnrichedParquetDataKafkaPublisher {
                 .appName("EnrichedParquetDataKafkaPublisher")
                 .master(master)
                 .getOrCreate();
+
+        spark.sparkContext().setLogLevel(sparkLogLevel);
 
         spark.streams().addListener(new StreamingQueryListener() {
             @Override

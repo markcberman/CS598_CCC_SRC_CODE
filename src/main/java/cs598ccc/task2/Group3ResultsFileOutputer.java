@@ -28,6 +28,7 @@ public class Group3ResultsFileOutputer {
     private String query3dot2KafkaTopic = null;
     private Integer query3dot2KafkaTopicMinPartitions = null;
     private String query3dot2Path = null;
+    private String sparkLogLevel = null;
 
 
 
@@ -81,6 +82,8 @@ public class Group3ResultsFileOutputer {
         logger.info("query3dot2KafkaTopic: " + query3dot2KafkaTopic);
         query3dot2Path = prop.getProperty("query3dot2Path", "/home/markcb2/queryResults/task2/query3dot2");
         logger.info("query3dot2Path: " + query3dot2Path);
+        sparkLogLevel = prop.getProperty("sparkLogLevel","WARN");
+        logger.info("sparkLogLevel: " + sparkLogLevel);
 
 
         if (input != null) {
@@ -97,6 +100,8 @@ public class Group3ResultsFileOutputer {
                 .master(master)
                 .config("spark.driver.memory","6g")
                 .getOrCreate();
+
+        spark.sparkContext().setLogLevel(sparkLogLevel);
 
         spark.sparkContext().setLogLevel("TRACE");
 

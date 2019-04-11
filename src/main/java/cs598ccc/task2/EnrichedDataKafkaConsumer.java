@@ -32,6 +32,7 @@ public class EnrichedDataKafkaConsumer {
     private Integer query1dot1TriggerProcessingTimeMillis = null;
     private String query1dot2KafkaTopic = null;
     private Integer query1dot2TriggerProcessingTimeMillis = null;
+    private String sparkLogLevel = null;
 
 
 
@@ -103,6 +104,8 @@ public class EnrichedDataKafkaConsumer {
         logger.info("query1dot2CheckpointLocation: " + query1dot2CheckpointLocation);
         query1dot2TriggerProcessingTimeMillis = Integer.valueOf(prop.getProperty("query1dot2TriggerProcessingTimeMillis", "1000"));
         logger.info("query1dot2TriggerProcessingTimeMillis: " + query1dot2TriggerProcessingTimeMillis);
+        sparkLogLevel = prop.getProperty("sparkLogLevel","WARN");
+        logger.info("sparkLogLevel: " + sparkLogLevel);
 
 
         if (input != null) {
@@ -119,6 +122,8 @@ public class EnrichedDataKafkaConsumer {
                 .getOrCreate();
 
         logger.info("SparkSession Started.");
+
+        spark.sparkContext().setLogLevel(sparkLogLevel);
 
         spark.streams().addListener(new StreamingQueryListener() {
             @Override
@@ -156,14 +161,14 @@ public class EnrichedDataKafkaConsumer {
 
         logger.info("Kafka source is streaming: "+ jsonified_data.isStreaming());
 
-        /*
+
 
         jsonified_data.writeStream()
                 .outputMode("append")
                 .format("console")
                 .start();
 
-        */
+
 
         Dataset<Row> airportArrivalsAndDepartures = jsonified_data.groupBy("origin")
                 .agg(
@@ -179,10 +184,12 @@ public class EnrichedDataKafkaConsumer {
                 ;
 
         /*
+
         airportArrivalsAndDepartures.writeStream()
                 .outputMode("complete")
                 .format("console")
                 .start();
+
         */
 
         Dataset<Row> airline_on_time_arrival_performance = jsonified_data
@@ -194,7 +201,7 @@ public class EnrichedDataKafkaConsumer {
                 .withColumn("time_added", expr(("ActualElapsedTime + totalTripDelay - typicalTripTime")))
                 //.orderBy(asc("Carrier"), asc("origin"), asc("dest"), desc("FlightDate"), asc("DepTime"))
                 ;
-        //airline_on_time_arrival_performance.show(10);
+
 
 
         Dataset<Row> airlineOnTimeArrivalPerformance_df = airline_on_time_arrival_performance.groupBy("group","Carrier")
@@ -209,6 +216,7 @@ public class EnrichedDataKafkaConsumer {
                 .outputMode("complete")
                 .format("console")
                 .start();
+
         */
 
         StreamingQuery query1Dot1KafkaSink = airportArrivalsAndDepartures.selectExpr("CAST(origin AS STRING) AS key", "to_json(struct(*)) AS value")
@@ -239,7 +247,7 @@ public class EnrichedDataKafkaConsumer {
                 .option("topic", query1dot2KafkaTopic.trim())
                 .option("kafka.bootstrap.servers", kafkaHost)
                 .option("checkpointLocation", query1dot2CheckpointLocation)
-                .trigger(Trigger.ProcessingTime(query1dot2TriggerProcessingTimeMillis.intValue(), TimeUnit.MILLISECONDS))
+                //.trigger(Trigger.ProcessingTime(query1dot2TriggerProcessingTimeMillis.intValue(), TimeUnit.MILLISECONDS))
                 .start();
 
         logger.info("Query id for streaming to Kafka sink is: " + query1Dot2KafkaSink.id());

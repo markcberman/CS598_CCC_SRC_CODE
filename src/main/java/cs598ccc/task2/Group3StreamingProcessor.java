@@ -35,6 +35,7 @@ public class Group3StreamingProcessor {
     private String query3dot2KafkaTopic = null;
     private String query3dot2CheckpointLocation = null;
     private Integer query3dot2TriggerProcessingTimeMillis =null;
+    private String sparkLogLevel = null;
 
 
     public static void main(String[] args){
@@ -94,6 +95,8 @@ public class Group3StreamingProcessor {
         logger.info("query3dot2CheckpointLocation: " + query3dot2CheckpointLocation);
         query3dot2TriggerProcessingTimeMillis = Integer.valueOf(prop.getProperty("query3dot2TriggerProcessingTimeMillis", "1000"));
         logger.info("query3dot2TriggerProcessingTimeMillis: " + query3dot2TriggerProcessingTimeMillis);
+        sparkLogLevel = prop.getProperty("sparkLogLevel","WARN");
+        logger.info("sparkLogLevel: " + sparkLogLevel);
 
 
         if (input != null) {
@@ -109,6 +112,8 @@ public class Group3StreamingProcessor {
                 .appName("Group3StreamingProcessor")
                 .master(master)
                 .getOrCreate();
+
+        spark.sparkContext().setLogLevel(sparkLogLevel);
 
         logger.info("SparkSession Started.");
 

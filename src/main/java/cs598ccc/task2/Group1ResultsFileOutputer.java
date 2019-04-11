@@ -29,6 +29,7 @@ public class Group1ResultsFileOutputer {
     private Integer query1dot1KafkaTopicMinmaxOffsetsPerTrigger = null;
     private Integer query1dot2KafkaTopicMinPartitions = null;
     private Integer query1dot2KafkaTopicMinmaxOffsetsPerTrigger = null;
+    private String sparkLogLevel = null;
 
 
     public static void main(String[] args){
@@ -91,6 +92,8 @@ public class Group1ResultsFileOutputer {
         logger.info("query1dot2KafkaTopicMinPartitions: " + query1dot2KafkaTopicMinPartitions);
         query1dot2KafkaTopicMinmaxOffsetsPerTrigger = Integer.valueOf(prop.getProperty("query1dot2KafkaTopicMinmaxOffsetsPerTrigger","50"));
         logger.info("query1dot2KafkaTopicMinmaxOffsetsPerTrigger: " + query1dot2KafkaTopicMinmaxOffsetsPerTrigger);
+        sparkLogLevel = prop.getProperty("sparkLogLevel","WARN");
+        logger.info("sparkLogLevel: " + sparkLogLevel);
 
     }
     private void start() throws StreamingQueryException {
@@ -100,8 +103,11 @@ public class Group1ResultsFileOutputer {
                 .getOrCreate();
 
 
+        spark.sparkContext().setLogLevel(sparkLogLevel);
 
         logger.info("SparkSession Started.");
+
+
 
 
         Dataset<Row> query1dot1KafkaSource  = spark.read()

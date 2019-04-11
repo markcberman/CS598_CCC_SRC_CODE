@@ -30,6 +30,7 @@ public class Group2ResultsFileOutputer {
     private Integer query2dot1KafkaTopicMinPartitions = null;
     private Integer query2dot2KafkaTopicMinPartitions = null;
     private Integer query2dot4KafkaTopicMinPartitions = null;
+    private String sparkLogLevel = null;
 
 
 
@@ -92,6 +93,8 @@ public class Group2ResultsFileOutputer {
         logger.info("query2dot2KafkaTopicMinPartitions: " + query2dot2KafkaTopicMinPartitions);
         query2dot4KafkaTopicMinPartitions = Integer.valueOf(prop.getProperty("query2dot4KafkaTopicMinPartitions","1"));
         logger.info("query2dot4KafkaTopicMinPartitions: " + query2dot4KafkaTopicMinPartitions);
+        sparkLogLevel = prop.getProperty("sparkLogLevel","WARN");
+        logger.info("sparkLogLevel: " + sparkLogLevel);
 
 
     }
@@ -102,6 +105,8 @@ public class Group2ResultsFileOutputer {
                 .appName("Group2ResultsFileOutputer")
                 .master(master)
                 .getOrCreate();
+
+        spark.sparkContext().setLogLevel(sparkLogLevel);
 
 
         logger.info("SparkSession Started.");
@@ -122,7 +127,7 @@ public class Group2ResultsFileOutputer {
                 //.orderBy(desc("timestamp"));
                 .orderBy(asc("Origin"),asc("Carrier"),desc("timestamp"));
 
-        query2dot1_all_data.show(1000);
+        //query2dot1_all_data.show(1000);
 
         Dataset<Row> query2dot1_reduced_data = query2dot1_all_data.groupBy("Origin", "Carrier")
                 .agg(
@@ -167,7 +172,7 @@ public class Group2ResultsFileOutputer {
                 //.orderBy(desc("timestamp"));
                 .orderBy(asc("Origin"),asc("Dest"),desc("timestamp"));
 
-        query2dot2_all_data.show(1000);
+        //query2dot2_all_data.show(1000);
 
         Dataset<Row> query2dot2_reduced_data = query2dot2_all_data.groupBy("Origin", "Dest")
                 .agg(
@@ -212,7 +217,7 @@ public class Group2ResultsFileOutputer {
                 //.orderBy(desc("timestamp"));
                 .orderBy(asc("Origin"),asc("Dest"),desc("timestamp"));
 
-        query2dot4_all_data.show(1000);
+        //query2dot4_all_data.show(1000);
 
 
         Dataset<Row> query2dot4_reduced_data = query2dot4_all_data.groupBy("Origin", "Dest")

@@ -39,6 +39,8 @@ public class Group3Preprocessor {
     private String enrichedParquetDataPath = null;
     private String enrichedOntimePerf2Task2SubsetParquet = null;
     private Integer filterByMonth =null;
+    private String sparkLogLevel = null;
+
 
 
     public static void main(String[] args){
@@ -109,6 +111,8 @@ public class Group3Preprocessor {
         logger.info("enrichedOntimePerf2Task2SubsetParquet: " + enrichedOntimePerf2Task2SubsetParquet);
         filterByMonth = Integer.valueOf(prop.getProperty("filterByMonth" + "5"));
         logger.info("filterByMonth: " + filterByMonth);
+        sparkLogLevel = prop.getProperty("sparkLogLevel","WARN");
+        logger.info("sparkLogLevel: " + sparkLogLevel);
 
 
         if (input != null) {
@@ -125,6 +129,8 @@ public class Group3Preprocessor {
                 .appName("Group3Preprocessor")
                 .master(master)
                 .getOrCreate();
+
+        spark.sparkContext().setLogLevel(sparkLogLevel);
 
         logger.info("SparkSession Started.");
 

@@ -40,6 +40,7 @@ public class Group2StreamingProcessor {
     private String query2dot4KafkaTopic = null;
     private String query2dot4CheckpointLocation = null;
     private Integer  query2dot4TriggerProcessingTimeMillis = null;
+    private String sparkLogLevel = null;
 
 
 
@@ -119,6 +120,8 @@ public class Group2StreamingProcessor {
         logger.info("query2dot4CheckpointLocation: " + query2dot4CheckpointLocation);
         query2dot4TriggerProcessingTimeMillis = Integer.valueOf(prop.getProperty("query2dot4TriggerProcessingTimeMillis", "1000"));
         logger.info("query2dot4TriggerProcessingTimeMillis: " + query2dot4TriggerProcessingTimeMillis);
+        sparkLogLevel = prop.getProperty("sparkLogLevel","WARN");
+        logger.info("sparkLogLevel: " + sparkLogLevel);
 
 
 
@@ -137,6 +140,8 @@ public class Group2StreamingProcessor {
                 .appName("Group2StreamingProcessor")
                 .master(master)
                 .getOrCreate();
+
+        spark.sparkContext().setLogLevel(sparkLogLevel);
 
         logger.info("SparkSession Started.");
 
@@ -228,7 +233,7 @@ public class Group2StreamingProcessor {
                 .option("topic", query2dot1KafkaTopic.trim())
                 .option("kafka.bootstrap.servers", kafkaHost)
                 .option("checkpointLocation", query2dot1CheckpointLocation)
-                .trigger(Trigger.ProcessingTime(query2dot1TriggerProcessingTimeMillis.intValue(), TimeUnit.MILLISECONDS))
+                //.trigger(Trigger.ProcessingTime(query2dot1TriggerProcessingTimeMillis.intValue(), TimeUnit.MILLISECONDS))
                 .start();
 
         logger.info("Query id for streaming to Kafka sink is: " + query2Dot1KafkaSink.id());
@@ -247,7 +252,7 @@ public class Group2StreamingProcessor {
                 .option("topic", query2dot2KafkaTopic.trim())
                 .option("kafka.bootstrap.servers", kafkaHost)
                 .option("checkpointLocation", query2dot2CheckpointLocation)
-                .trigger(Trigger.ProcessingTime(query2dot2TriggerProcessingTimeMillis.intValue(), TimeUnit.MILLISECONDS))
+                //.trigger(Trigger.ProcessingTime(query2dot2TriggerProcessingTimeMillis.intValue(), TimeUnit.MILLISECONDS))
                 .start();
 
 
@@ -269,7 +274,7 @@ public class Group2StreamingProcessor {
                 .option("topic", query2dot4KafkaTopic.trim())
                 .option("kafka.bootstrap.servers", kafkaHost)
                 .option("checkpointLocation", query2dot4CheckpointLocation)
-                .trigger(Trigger.ProcessingTime(query2dot4TriggerProcessingTimeMillis.intValue(), TimeUnit.MILLISECONDS))
+                //.trigger(Trigger.ProcessingTime(query2dot4TriggerProcessingTimeMillis.intValue(), TimeUnit.MILLISECONDS))
                 .start();
 
 

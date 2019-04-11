@@ -26,6 +26,7 @@ public class Setup {
     private String destAirportsPath = null;
     private String enrichedOntimePerf2Task2Subset = null;
     private String enrichedOntimePerf2Task2SubsetParquet = null;
+    private String sparkLogLevel = null;
 
 
     public static void main(String[] args){
@@ -81,6 +82,8 @@ public class Setup {
         enrichedOntimePerf2Task2Subset = prop.getProperty("enrichedOntimePerf2Task2Subset", "/home/markcb2/csv_data/task2/enriched_ontimeperf_task2_subset");
         logger.info("enrichedOntimePerf2Task2Subset: " + enrichedOntimePerf2Task2Subset);
         enrichedOntimePerf2Task2SubsetParquet = prop.getProperty("enrichedOntimePerf2Task2SubsetParquet", " hdfs:///cs598ccc/parquet_data/enriched_ontimeperf_task2_subset");
+        sparkLogLevel = prop.getProperty("sparkLogLevel","WARN");
+        logger.info("sparkLogLevel: " + sparkLogLevel);
 
 
 
@@ -98,6 +101,8 @@ public class Setup {
                 .appName("Setup")
                 .master(master)
                 .getOrCreate();
+
+        spark.sparkContext().setLogLevel(sparkLogLevel);
 
         logger.info("SparkSession Started.");
 

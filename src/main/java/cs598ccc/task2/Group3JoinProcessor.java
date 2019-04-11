@@ -34,6 +34,7 @@ public class Group3JoinProcessor {
     private String query3dot2_ns_CheckpointLocation = null;
     private Integer query3dot2TriggerProcessingTimeMillis =null;
     private String enrichedParquetDataPath = null;
+    private String sparkLogLevel = null;
 
 
     public static void main(String[] args){
@@ -94,6 +95,8 @@ public class Group3JoinProcessor {
         query3dot2TriggerProcessingTimeMillis = Integer.valueOf(prop.getProperty("query3dot2TriggerProcessingTimeMillis", "1000"));
         logger.info("query3dot2TriggerProcessingTimeMillis: " + query3dot2TriggerProcessingTimeMillis);
         enrichedParquetDataPath = prop.getProperty("enrichedParquetDataPath", "hdfs:///cs598ccc/parquet_data/enriched_ontimeperf");
+        sparkLogLevel = prop.getProperty("sparkLogLevel","WARN");
+        logger.info("sparkLogLevel: " + sparkLogLevel);
 
 
         if (input != null) {
@@ -111,7 +114,7 @@ public class Group3JoinProcessor {
                 .config("spark.driver.memory","6g")
                 .getOrCreate();
 
-        spark.sparkContext().setLogLevel("TRACE");
+        spark.sparkContext().setLogLevel(sparkLogLevel);
 
         spark.streams().addListener(new StreamingQueryListener() {
             @Override

@@ -405,7 +405,7 @@ public class SchemaCreator {
                         DataTypes.StringType,
                         false),
                 DataTypes.createStructField(
-                        "leg1_timestamp",
+                        "Dest",
                         DataTypes.StringType,
                         false),
                 DataTypes.createStructField(

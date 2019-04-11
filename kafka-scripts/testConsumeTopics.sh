@@ -18,6 +18,7 @@ cd /usr/hdp/current/kafka-broker/bin
 ./kafka-console-consumer.sh --bootstrap-server localhost:6667 --from-beginning  --topic query1dot1-multipart
 ./kafka-console-consumer.sh --bootstrap-server localhost:6667 --from-beginning  --topic query1dot2-multipart
 ./kafka-console-consumer.sh --bootstrap-server localhost:6667 --from-beginning  --topic query2dot1-multipart
+
 ./kafka-console-consumer.sh --bootstrap-server localhost:6667 --from-beginning  --topic query2dot2-multipart
 ./kafka-console-consumer.sh --bootstrap-server localhost:6667 --from-beginning  --topic query2dot4-multipart
 ./kafka-console-consumer.sh --bootstrap-server localhost:6667 --from-beginning  --topic enriched-cleansed-data-2008-multipart
