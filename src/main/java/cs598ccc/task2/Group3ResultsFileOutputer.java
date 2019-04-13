@@ -103,8 +103,6 @@ public class Group3ResultsFileOutputer {
 
         spark.sparkContext().setLogLevel(sparkLogLevel);
 
-        spark.sparkContext().setLogLevel("TRACE");
-
 
         logger.info("SparkSession Started.");
 
@@ -145,7 +143,7 @@ public class Group3ResultsFileOutputer {
                 ;
 
 
-        multi_city_flight_ranked_df.show(1000);
+        //multi_city_flight_ranked_df.show(1000);
 
 
         multi_city_flight_ranked_df.coalesce(1)
@@ -156,7 +154,46 @@ public class Group3ResultsFileOutputer {
                 .option("header", "true")
                 .save(query3dot2Path);
 
-        logger.info("CSV File Output with " + multi_city_flight_ranked_df.count() + " records for Query Result for Group 3, Question 2 Has Been Written");
+        logger.info("CSV File Output with " + multi_city_flight_ranked_df.count() + " records for Query Result for Group 3, Question 2 Has Been Written to Cassandra");
+
+
+        Dataset<Row> multi_city_flight_query_results_df = multi_city_flight_ranked_df.select(col("Leg1_Origin"), col("Leg1_Dest"), col("Leg1_Carrier"),
+                col("Leg1_FlightNum"), col("Leg1_FlightDate"),col("Leg1_ArrDelay"),col("Leg2_Dest"),col("Leg2_Carrier"), col("Leg2_FlightNum"),
+                col("Leg2_FlightDate"), col("Leg2_ArrDelay"),col("totalTripDelayInMinutes"))
+                .where(
+                    col("Leg1_Origin").equalTo("BOS")
+                    .and(col("Leg1_Dest").equalTo("ATL"))
+                        .and(col("Leg2_Dest").equalTo("LAX"))
+                            .and(col("Leg1_FlightDate").equalTo(to_date(lit("2008-04-03"))))
+                        .or(
+
+                                col("Leg1_Origin").equalTo("PHX")
+                                        .and(col("Leg1_Dest").equalTo("JFK"))
+                                        .and(col("Leg2_Dest").equalTo("MSP"))
+                                        .and(col("Leg1_FlightDate").equalTo(to_date(lit("2008-09-07"))))
+                        )
+                            .or(
+                                    col("Leg1_Origin").equalTo("DFW")
+                                            .and(col("Leg1_Dest").equalTo("STL"))
+                                            .and(col("Leg2_Dest").equalTo("ORD"))
+                                            .and(col("Leg1_FlightDate").equalTo(to_date(lit("2008-01-24"))))
+                            )
+                            .or(
+                                    col("Leg1_Origin").equalTo("LAX")
+                                            .and(col("Leg1_Dest").equalTo("MIA"))
+                                            .and(col("Leg2_Dest").equalTo("LAX"))
+                                            .and(col("Leg1_FlightDate").equalTo(to_date(lit("2008-05-16"))))
+                            )
+                );
+
+
+
+        logger.info("multi-city flight query results from Cassandra");
+        multi_city_flight_query_results_df.show();
+
+
+
+
 
 
     }
